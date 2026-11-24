@@ -1,0 +1,2345 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 유튜브 임베드 오류 153을 막기 위해 도메인 정보를 함께 보냅니다 -->
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>최성보 온라인 수업관리 - 2026학년도 단원고 (2학년)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // 2학년 민트 테마: 1학년과 같은 화면 코드에서 'blue' 색 이름에 민트 색을 넣어 전체 색만 바꿉니다
+      if (window.tailwind) tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              blue: {
+                50: '#f0fdfa',
+                100: '#ccfbf1',
+                200: '#99f6e4',
+                300: '#5eead4',
+                400: '#2dd4bf',
+                500: '#14b8a6', // 메인 민트 브랜딩 컬러
+                600: '#0d9488',
+                700: '#0f766e',
+                800: '#115e59',
+                900: '#134e4a',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <!-- Google Font (Pretendard) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css">
+    <!-- Lucide Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+    <!-- html2pdf.js for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+      body {
+        font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f0fdfa; /* 민트 연한 배경 트랙 */
+        border-radius: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #99f6e4; /* 민트 스크롤바 바 */
+        border-radius: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #2dd4bf;
+      }
+      /* 구글 패스워드 유출 경고 엔진을 원천 우회하기 위한 텍스트 보안 비표준 마스킹 스타일 정의 */
+      @media print {
+        body.printing-report > *:not(#pdfExportModal) { display: none !important; }
+        body.printing-report { padding-top: 0 !important; background: #fff !important; }
+        body.printing-report #pdfExportModal { position: static !important; display: block !important; width: auto !important; min-height: 0 !important; padding: 0 !important; opacity: 1 !important; }
+        @page { size: A4 portrait; margin: 15mm 10mm; }
+      }
+      .secure-mask-input {
+        -webkit-text-security: disc !important; /* Safari, Chrome, Edge 대응 브라우저 단 마스킹 */
+        text-security: disc !important; /* 표준 대응 */
+      }
+    </style>
+  </head>
+  <body class="bg-blue-50/30 min-h-screen text-slate-800 flex flex-col pt-16">
+  
+    <!-- TOP HEADER BAR (민트 테마 - 화면 상단 고정) -->
+    <header class="bg-white border-b border-blue-100 fixed top-0 left-0 right-0 z-50 shadow-sm h-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="bg-blue-500 text-white p-2 rounded-lg shadow-md shadow-blue-100 flex items-center justify-center">
+            <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h1 class="text-lg font-bold text-slate-950 leading-tight tracking-tight">최성보 온라인 수업관리</h1>
+            <p class="text-xs text-blue-600 font-bold flex items-center">
+              <span class="inline-block w-2 h-2 bg-blue-500 rounded-full mr-1.5 animate-pulse"></span>
+              2026학년도 단원고 (2학년)
+            </p>
+          </div>
+        </div>
+        
+        <!-- Controls & User Profile Area -->
+        <div class="flex items-center space-x-3">
+          <div id="userProfileArea" class="hidden flex items-center space-x-4">
+            <div class="text-right hidden sm:block">
+              <div class="text-sm font-semibold text-slate-800" id="headerUserName">사용자 이름</div>
+              <div class="text-xs text-blue-600 font-bold" id="headerUserRole">구분</div>
+            </div>
+            <button onclick="logout()" class="flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-blue-200 text-slate-600 hover:text-red-600 hover:border-red-100 hover:bg-red-50 transition-all text-sm font-bold">
+              <i data-lucide="log-out" class="w-4 h-4"></i>
+              <span>로그아웃</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+  
+    <!-- MAIN CONTAINER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col justify-start pt-6 sm:pt-10">
+      
+      <!-- LOADING SPINNER (데이터 연동 대기) -->
+      <div id="initialDataLoader" class="flex flex-col items-center justify-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <p class="text-sm text-blue-600 font-bold mt-4 animate-pulse">단원고 2학년 수업 데이터베이스 연결 중...</p>
+      </div>
+  
+      <!-- 1. LOGIN SCREEN -->
+      <section id="loginSection" class="hidden w-full max-w-md mx-auto bg-white rounded-2xl shadow-xl shadow-blue-100/30 border border-blue-100 p-8 transition-all mt-4 sm:mt-10 mb-auto">
+        <div class="text-center mb-8">
+          <h2 class="text-2xl font-black text-slate-950 tracking-tight">최성보 온라인 수업관리</h2>
+          <p class="text-blue-600 text-sm font-bold mt-2">2026학년도 단원고 (2학년)</p>
+        </div>
+  
+        <div class="space-y-5">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">학번 또는 아이디</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+                <i data-lucide="user" class="w-5 h-5"></i>
+              </span>
+              <input type="text" id="loginId" required autocomplete="off"
+                     placeholder="학생: 학번 (예: 20911) / 교사: 아이디" 
+                     lang="en"
+                     class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-blue-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:bg-white transition-all text-slate-900 font-medium placeholder-slate-400">
+            </div>
+            <p class="text-[10px] text-slate-400 mt-1 font-medium">* 입력창은 영문/숫자 입력을 기본값으로 권장합니다.</p>
+          </div>
+  
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wide">비밀번호</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+                <i data-lucide="lock" class="w-5 h-5"></i>
+              </span>
+              <input type="text" id="loginPw" required autocomplete="off"
+                     placeholder="비밀번호 입력"
+                     lang="en"
+                     class="secure-mask-input w-full pl-10 pr-12 py-3 bg-slate-50 border border-blue-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:bg-white transition-all text-slate-900 font-medium placeholder-slate-400">
+              <button type="button" onclick="togglePasswordVisibility('loginPw', 'pwToggleIcon')" 
+                      class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600 transition-colors">
+                <i id="pwToggleIcon" data-lucide="eye" class="w-5 h-5"></i>
+              </button>
+            </div>
+          </div>
+          <!-- 로그인 에러 메시지 뷰 영역 (미등록 사용자 / 비밀번호 불일치 시 동적 노출) -->
+          <div id="loginErrorArea" class="hidden bg-rose-50 border border-rose-100 text-rose-600 text-xs font-bold px-4 py-3 rounded-xl flex items-center space-x-2 animate-pulse">
+            <i data-lucide="alert-circle" class="w-4 h-4 text-rose-500 flex-shrink-0"></i>
+            <span id="loginErrorText">등록된 사용자가 아닙니다.</span>
+          </div>
+  
+          <button type="button" onclick="triggerAlternativeLogin()" class="w-full bg-blue-500 hover:bg-blue-600 active:transform active:scale-[0.99] text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-blue-100 transition-all flex items-center justify-center space-x-2">
+            <span id="loginBtnLabel">로그인</span>
+            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </section>
+  
+      <!-- 2. TEACHER / MANAGER DASHBOARD SCREEN -->
+      <section id="dashboardSection" class="hidden w-full transition-all space-y-6">
+        
+        <!-- Top Overview Dashboard Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm flex items-center space-x-4">
+            <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="users" class="w-6 h-6"></i></div>
+            <div>
+              <div class="text-2xl font-bold text-slate-900" id="statTotalStudents">0</div>
+              <div class="text-xs text-slate-500 font-semibold">관리 대상 전체 학생 수</div>
+            </div>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm flex items-center space-x-4">
+            <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="check-circle" class="w-6 h-6"></i></div>
+            <div>
+              <div class="text-2xl font-bold text-slate-900" id="statCompletedUnits">0</div>
+              <div class="text-xs text-slate-500 font-semibold">누적 완료 학습 수</div>
+            </div>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm flex items-center space-x-4">
+            <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="book-open" class="w-6 h-6"></i></div>
+            <div>
+              <div class="text-2xl font-bold text-slate-900" id="statTotalSubjects">0</div>
+              <div class="text-xs text-slate-500 font-semibold">등록된 총 과목 수</div>
+            </div>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm flex items-center space-x-4">
+            <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="award" class="w-6 h-6"></i></div>
+            <div>
+              <div class="text-2xl font-bold text-slate-900" id="statAvgProgress">0%</div>
+              <div class="text-xs text-slate-500 font-semibold">전체 평균 이수율</div>
+            </div>
+          </div>
+        </div>
+  
+        <!-- MAIN TAB NAVIGATION -->
+        <div class="bg-white p-1.5 rounded-xl border border-blue-100 shadow-sm flex flex-wrap gap-1">
+          <button onclick="switchTab('subject')" id="tabBtn-subject" class="flex-1 min-w-[120px] py-2.5 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center space-x-2 bg-blue-500 text-white shadow-sm">
+            <i data-lucide="book-marked" class="w-4 h-4"></i>
+            <span>과목별 이수현황</span>
+          </button>
+          <button onclick="switchTab('class')" id="tabBtn-class" class="flex-1 min-w-[120px] py-2.5 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center space-x-2 text-slate-600 hover:bg-blue-50/50">
+            <i data-lucide="layout-grid" class="w-4 h-4"></i>
+            <span>반별 이수현황</span>
+          </button>
+          <button onclick="switchTab('student')" id="tabBtn-student" class="flex-1 min-w-[120px] py-2.5 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center space-x-2 text-slate-600 hover:bg-blue-50/50">
+            <i data-lucide="search" class="w-4 h-4"></i>
+            <span>학생별 이수현황</span>
+          </button>
+          <button onclick="syncSheetsDataDirectly()" class="py-2.5 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center space-x-2 text-blue-600 hover:bg-blue-50/50">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            <span>새로고침</span>
+          </button>
+        </div>
+  
+        <!-- TAB PANEL 1: SUBJECT-BASED VIEW -->
+        <div id="tabPanel-subject" class="space-y-6">
+          <div class="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-5 border-b border-blue-50 gap-4">
+              <div>
+                <h3 class="text-lg font-bold text-slate-950 flex items-center">
+                  <i data-lucide="bookmark" class="w-5 h-5 text-blue-500 mr-2"></i>
+                  과목 선택 후 이수 결과 조회
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">조회하고자 하는 교과목 버튼을 선택하세요. 매핑된 학생 명단이 학번 오름차순으로 자동 정렬됩니다.</p>
+              </div>
+              <div class="flex flex-col sm:flex-row gap-2">
+                <button onclick="exportToPDF('print')" class="w-full sm:w-auto bg-white hover:bg-blue-50 text-blue-600 border border-blue-200 font-bold text-xs py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 shadow-sm transition-all">
+                  <i data-lucide="printer" class="w-4 h-4"></i>
+                  <span>수강결과 인쇄</span>
+                </button>
+                <button onclick="exportToPDF()" class="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 shadow-md hover:shadow-lg transition-all">
+                  <i data-lucide="file-text" class="w-4 h-4"></i>
+                  <span>수강결과 PDF 저장</span>
+                </button>
+              </div>
+            </div>
+  
+            <!-- Subject Buttons Container -->
+            <div class="py-5">
+              <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">담당/개설 과목 목록</label>
+              <div id="subjectBtnList" class="flex flex-wrap gap-2">
+                <!-- Dynamically generated buttons -->
+              </div>
+            </div>
+  
+            <!-- Selected Subject Info Card -->
+            <div id="selectedSubjectMeta" class="hidden p-4 bg-blue-50/50 rounded-xl border border-blue-100 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <span class="text-xs font-bold text-blue-700 bg-blue-100 px-2.5 py-1 rounded-md" id="metaSubjectCategory">과목</span>
+                <h4 class="text-base font-bold text-slate-950 mt-2" id="metaSubjectName">과목명</h4>
+                <p class="text-xs text-slate-500 mt-0.5" id="metaSubjectLectures">총 차시 정보 불러오는 중...</p>
+              </div>
+              <div class="flex items-center space-x-6">
+                <div class="text-center sm:text-right">
+                  <span class="text-xs text-slate-400 block font-medium">대상 학생 수</span>
+                  <span class="text-lg font-bold text-slate-800" id="metaSubjectStudentCount">0명</span>
+                </div>
+                <div class="text-center sm:text-right border-l border-blue-100 pl-6">
+                  <span class="text-xs text-slate-400 block font-medium">이수 완료율</span>
+                  <span class="text-lg font-bold text-blue-600" id="metaSubjectCompleteRatio">0%</span>
+                </div>
+              </div>
+            </div>
+  
+            <!-- Student Table -->
+            <div class="overflow-x-auto border border-blue-100 rounded-xl" id="pdfPrintArea">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-blue-50/30 text-slate-700 text-xs font-bold border-b border-blue-100">
+                    <th class="py-3 px-4">학번</th>
+                    <th class="py-3 px-4">이름</th>
+                    <th class="py-3 px-4">수강 과목</th>
+                    <th class="py-3 px-4 text-center">이수 현황 (완료 차시 / 전체 차시)</th>
+                    <th class="py-3 px-4 text-right">진척도</th>
+                  </tr>
+                </thead>
+                <tbody id="subjectStudentTableBody" class="divide-y divide-blue-50 text-sm font-medium text-slate-700">
+                  <tr>
+                    <td colspan="5" class="py-8 text-center text-slate-400 font-normal">
+                      <i data-lucide="inbox" class="w-10 h-10 mx-auto text-slate-300 mb-2"></i>
+                      과목을 선택하시면 해당 과목의 수강 명단 및 이수 상태가 표시됩니다.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+  
+        <!-- TAB PANEL 2: CLASS-BASED VIEW -->
+        <div id="tabPanel-class" class="hidden space-y-6">
+          <div class="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm">
+            <div class="pb-5 border-b border-blue-50 mb-5">
+              <h3 class="text-lg font-bold text-slate-950 flex items-center">
+                <i data-lucide="layers" class="w-5 h-5 text-blue-500 mr-2"></i>
+                반별 학습 진척 현황
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">1반부터 9반까지 반 버튼을 선택하여 해당 반 소속 학생들의 전체 과목 이수율을 한눈에 조회합니다.</p>
+            </div>
+  
+            <!-- Class Selection Buttons -->
+            <div class="grid grid-cols-3 sm:grid-cols-9 gap-1.5 bg-blue-50/50 p-1.5 rounded-xl border border-blue-100 mb-6">
+              <button onclick="selectClass('01')" id="classBtn-01" class="py-2 rounded-lg font-bold text-sm text-slate-700 hover:bg-white hover:shadow-xs transition-all">1반</button>
+              <button onclick="selectClass('02')" id="classBtn-02" class="py-2 rounded-lg font-bold text-sm text-slate-700 hover:bg-white hover:shadow-xs transition-all">2반</button>
+              <button onclick="selectClass('03')" id="classBtn-03" class="py-2 rounded-lg font-bold text-sm text-slate-700 hover:bg-white hover:shadow-xs transition-all">3반</button>
+              <button onclick="selectClass('04')" id="classBtn-04" class="py-2 rounded-lg font-bold text-sm text-slate-700 hover:bg-white hover:shadow-xs transition-all">4반</button>
+              <button onclick="selectClass('05')" id="classBtn-05" class="py-2 rounded-lg font-bold text-sm text-slate-700 hover:bg-white hover:shadow-xs transition-all">5반</button>
+              <button onclick="selectClass('06')" id="classBtn-06" class="py-2 rounded-lg font-bold text-sm text-slate-700 hover:bg-white hover:shadow-xs transition-all">6반</button>
+              <button onclick="selectClass('07')" id="classBtn-07" class="py-2 rounded-lg font-bold text-sm text-slate-700 hover:bg-white hover:shadow-xs transition-all">7반</button>
+              <button onclick="selectClass('08')" id="classBtn-08" class="py-2 rounded-lg font-bold text-sm text-slate-700 hover:bg-white hover:shadow-xs transition-all">8반</button>
+              <button onclick="selectClass('09')" id="classBtn-09" class="py-2 rounded-lg font-bold text-sm text-slate-700 hover:bg-white hover:shadow-xs transition-all">9반</button>
+            </div>
+  
+            <!-- Class Students List Grid -->
+            <div class="overflow-x-auto border border-blue-100 rounded-xl">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-blue-50/30 border-b border-blue-100 text-slate-700 text-xs font-bold">
+                    <th class="py-3 px-4 w-28">학번</th>
+                    <th class="py-3 px-4 w-28">이름</th>
+                    <th class="py-3 px-4 w-1/3">배정 과목명</th>
+                    <th class="py-3 px-4 text-center">과목별 상세 이수율 및 진척도</th>
+                  </tr>
+                </thead>
+                <tbody id="classStudentTableBody" class="divide-y divide-blue-50 text-sm font-medium text-slate-700">
+                  <tr>
+                    <td colspan="4" class="py-8 text-center text-slate-400 font-normal">
+                      <i data-lucide="layout" class="w-10 h-10 mx-auto text-slate-300 mb-2"></i>
+                      학급 버튼을 선택하시면 소속 학생들의 수강 통계가 표시됩니다.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+  
+        <!-- TAB PANEL 3: STUDENT-BASED VIEW -->
+        <div id="tabPanel-student" class="hidden space-y-6">
+          <div class="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm">
+            <div class="pb-5 border-b border-blue-50 mb-6">
+              <h3 class="text-lg font-bold text-slate-950 flex items-center">
+                <i data-lucide="user-check" class="w-5 h-5 text-blue-500 mr-2"></i>
+                학생 개별 검색 및 종합 현황
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">학번을 직접 입력하여 학생의 종합적인 수강 정보 및 이수 패턴을 추적합니다.</p>
+            </div>
+  
+            <!-- Student Search Input Bar -->
+            <div class="max-w-md flex gap-2 mb-6">
+              <div class="relative flex-grow">
+                <span class="absolute inset-y-0 left-0 flex items-center text-slate-400 pl-3">
+                  <i data-lucide="search" class="w-5 h-5"></i>
+                </span>
+                <input type="text" id="searchStudentId" oninput="liveSearchStudent()" placeholder="학번 5자리 입력 (예: 20911)" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-blue-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400 focus:bg-white text-sm font-semibold text-slate-800">
+              </div>
+              <button onclick="liveSearchStudent()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all shadow-sm">
+                검색
+              </button>
+            </div>
+  
+            <!-- Dynamic Individual Report Card -->
+            <div id="individualReportCard" class="hidden space-y-6 transition-all">
+              <div class="p-6 bg-gradient-to-r from-slate-950 to-teal-950 text-white rounded-2xl shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <span class="text-[10px] bg-white/10 text-blue-100 px-2.5 py-1 rounded-full font-extrabold uppercase tracking-widest">Student Profile</span>
+                  <h4 class="text-xl font-bold mt-2" id="reportStudentName">김철수 <span class="text-sm font-normal text-blue-200">(20911)</span></h4>
+                  <p class="text-xs text-blue-100 mt-1 flex items-center font-semibold">
+                    <i data-lucide="map-pin" class="w-3.5 h-3.5 mr-1 text-blue-300"></i>
+                    2026학년도 단원고등학교 2학년
+                  </p>
+                </div>
+                <div class="flex items-center space-x-6">
+                  <div class="text-left md:text-right">
+                    <span class="text-[11px] text-blue-200 block font-semibold">이수 대상 과목</span>
+                    <span class="text-lg font-extrabold text-white" id="reportTargetSubjectsCount">0과목</span>
+                  </div>
+                  <div class="text-left md:text-right border-l border-white/15 pl-6">
+                    <span class="text-[11px] text-blue-200 block font-semibold">평균 전체 이수율</span>
+                    <span class="text-2xl font-black text-blue-300" id="reportAverageRate">0%</span>
+                  </div>
+                </div>
+              </div>
+  
+              <!-- Mapping Subjects List -->
+              <div class="border border-blue-100 rounded-xl overflow-hidden bg-white">
+                <div class="bg-blue-50/50 px-4 py-3 border-b border-blue-100">
+                  <h5 class="text-xs font-bold text-slate-700 uppercase tracking-wider">이수 과목 목록 및 상세 진도</h5>
+                </div>
+                <div id="reportSubjectList" class="divide-y divide-blue-50">
+                  <!-- Dynamically Generated Row -->
+                </div>
+              </div>
+            </div>
+  
+            <div id="noSearchPlaceholder" class="p-12 text-center border border-dashed border-blue-200 rounded-2xl">
+              <i data-lucide="search-code" class="w-12 h-12 text-blue-300 mx-auto mb-3"></i>
+              <h4 class="text-slate-700 font-bold text-sm">학생 조회 대기 중</h4>
+              <p class="text-slate-400 text-xs mt-1">상단의 학번 검색 창을 사용하여 조회하려는 학생의 데이터를 즉시 확인해 보세요.</p>
+            </div>
+          </div>
+        </div>
+
+      </section>
+  
+      <!-- 3. STUDENT SCREEN -->
+      <section id="studentSection" class="hidden w-full transition-all space-y-6">
+        
+        <!-- Welcome Header -->
+        <div class="bg-gradient-to-r from-blue-500 to-teal-600 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+          <div class="absolute -right-10 -bottom-10 opacity-10 text-white">
+            <i data-lucide="graduation-cap" class="w-48 h-48"></i>
+          </div>
+          <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <span class="bg-white/20 text-white text-xs font-bold px-2.5 py-1 rounded-full">나의 강의실</span>
+              <h2 class="text-2xl font-black mt-2 tracking-tight"><span id="studentWelcomeName">홍길동</span> 학생, 반갑습니다!</h2>
+              <p class="text-blue-50 text-xs mt-1">배정받은 온라인 강의 목록입니다. 영상을 건너뛰거나 배속하지 않고 끝까지 들어주세요.</p>
+            </div>
+            <div class="bg-white/10 backdrop-blur-md px-4 py-3 rounded-xl border border-white/10 flex items-center space-x-4">
+              <div class="text-center">
+                <span class="text-[10px] text-blue-100 block font-bold">수강 필수</span>
+                <span class="text-lg font-extrabold text-white" id="studentTotalSubjectCount">0개 과목</span>
+              </div>
+              <div class="border-l border-white/20 h-8"></div>
+              <div class="text-center">
+                <span class="text-[10px] text-blue-100 block font-bold">수강 완료</span>
+                <span class="text-lg font-extrabold text-white" id="studentCompleteUnitCount">0차시</span>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Main Study Layout (Two Columns) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Left Column: Assigned Subjects List & Lecture List -->
+          <div class="lg:col-span-1 space-y-4">
+            <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm">
+              <h3 class="text-sm font-bold text-slate-800 pb-3 border-b border-blue-50 flex items-center justify-between">
+                <span>수강 과목 목록</span>
+                <span class="text-xs text-blue-600 font-bold">총 <span id="studentSubjectBadgeCount">0</span>개 과목</span>
+              </h3>
+              <div class="space-y-2 mt-4 max-h-[350px] overflow-y-auto custom-scrollbar pr-1" id="studentSubjectList">
+                <!-- Dynamically rendered -->
+              </div>
+            </div>
+  
+            <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm">
+              <div class="pb-3 border-b border-blue-50 flex items-center justify-between">
+                <h3 class="text-sm font-bold text-slate-800">과목별 영상 차시 목록</h3>
+                <button onclick="syncSheetsDataDirectly()" class="flex items-center space-x-1 px-2.5 py-1 rounded bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 transition-all text-xs font-bold shadow-xs">
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                  <span>이수현황 새로고침</span>
+                </button>
+              </div>
+              <div class="space-y-2 mt-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-1" id="studentLectureList">
+                <p class="text-xs text-slate-400 text-center py-6">과목을 먼저 탭하여 수강 차시 목록을 확인해 주세요.</p>
+              </div>
+            </div>
+          </div>
+  
+          <!-- Right Column: Video Play Area -->
+          <div class="lg:col-span-2 space-y-4">
+            <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm flex flex-col h-full">
+              <div class="pb-3 border-b border-blue-50 flex items-center justify-between">
+                <div>
+                  <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded" id="playingSubjectName">온라인 학습 터</span>
+                  <h4 class="text-base font-bold text-slate-950 mt-1" id="playingLectureTitle">학습할 동영상을 선택해 주세요.</h4>
+                </div>
+                <span class="text-xs text-rose-500 font-bold bg-rose-50 px-2.5 py-1 rounded-full border border-rose-100 flex items-center">
+                  <i data-lucide="shield-alert" class="w-3.5 h-3.5 mr-1"></i> 스마트 진도 가드 작동중
+                </span>
+              </div>
+  
+              <!-- Video Player Box Container (기기 불문 16:9 반응형 지원) -->
+              <div class="flex-grow flex flex-col justify-center items-center py-4 bg-slate-950 rounded-xl my-4 overflow-hidden relative min-h-[220px]">
+                <!-- Static Placeholder before Selection -->
+                <div id="playerPlaceholder" class="text-center p-8 z-10 flex flex-col items-center">
+                  <div class="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center text-blue-500 mb-4 animate-bounce">
+                    <i data-lucide="play-circle" class="w-10 h-10"></i>
+                  </div>
+                  <h5 class="text-white font-bold text-sm">재생 대기 중</h5>
+                  <p class="text-slate-500 text-xs mt-1.5 max-w-sm">좌측 목록에서 수강할 차시의 학습하기 버튼을 클릭하면 배속 탐색 우회가 차단된 반응형 스마트 플레이어가 활성화됩니다.</p>
+                </div>
+                <!-- Custom YouTube Wrapper for Controlling Skipping & Speed -->
+                <div id="videoFrameWrapper" class="w-full aspect-video relative hidden rounded-lg overflow-hidden bg-slate-950 shadow-inner">
+                  <div id="ytPlayerResponsiveTarget" class="w-full h-full">
+                    <div id="ytIframePlayer" class="absolute inset-0 w-full h-full"></div>
+                  </div>
+                  <!-- Secure Overlay to Intercept Direct Drags -->
+                  <div id="secureTouchOverlay" class="absolute inset-0 bg-transparent pointer-events-none"></div>
+                </div>
+              </div>
+              <!-- 저작권 및 샌드박스 보안 임베드 차단 해결 전용 수동 우회 컨트롤 패널 -->
+              <div id="embedFailSafePanel" class="hidden p-4 bg-amber-50/50 rounded-xl border border-amber-200/60 mb-4 text-xs">
+                <div class="flex items-start space-x-2.5">
+                  <i data-lucide="shield-alert" class="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0 animate-pulse"></i>
+                  <div class="space-y-1.5 flex-grow">
+                    <span class="font-extrabold text-amber-800">저작권 제한/임베드 재생 거부 감지됨</span>
+                    <p class="text-slate-600 leading-relaxed text-[11px]">
+                      이 영상은 유튜브의 원작자 보안 요청으로 웹 사이트 안에서 직접 재생이 안 될 수 있습니다. 우회 학습 모드를 작동하여 수강을 완료할 수 있습니다.
+                    </p>
+                    <button onclick="triggerExternalFallbackUI()" class="mt-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-1.5 px-3 rounded-lg flex items-center justify-center space-x-1 transition-all">
+                      <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                      <span>안전한 유튜브 외부 시청모드 전환</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <!-- 실시간 시청 vs 인정 시간 대조 보안 분석 패널 -->
+              <div id="securePlayProgressPanel" class="hidden p-5 bg-white text-slate-800 rounded-xl mb-4 border border-blue-100 shadow-sm">
+                <div class="flex items-center justify-between border-b border-blue-50 pb-2.5 mb-3.5">
+                  <div class="flex items-center space-x-2">
+                    <span class="inline-block w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse" id="progressIndicatorDot"></span>
+                    <span class="text-xs font-bold text-blue-800" id="progressAnalysisTitle">실시간 수강 시간 분석</span>
+                  </div>
+                  <span id="speedAlertText" class="text-xs font-bold text-blue-600">정속 시청 준수 중</span>
+                </div>
+                
+                <!-- 깔끔한 화이트 모듈형 수치 표시 영역 -->
+                <div class="flex items-center justify-around text-center py-1">
+                  <div class="flex flex-col">
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">본문 전체 분량</span>
+                    <span id="totalDurationText" class="text-base font-extrabold text-slate-800">00:00</span>
+                  </div>
+                  <div class="h-8 w-px bg-blue-100"></div>
+                  <div class="flex flex-col">
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">실제 수강 인정시간</span>
+                    <span id="realWatchedTimeText" class="text-base font-extrabold text-blue-600">00:00</span>
+                  </div>
+                  <div class="h-8 w-px bg-blue-100"></div>
+                  <div class="flex flex-col">
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">이수 충족률</span>
+                    <span id="realWatchedRatioText" class="text-base font-extrabold text-blue-500">0%</span>
+                  </div>
+                </div>
+                <button type="button" id="retryCompleteBtn" onclick="triggerCompletionSuccess()" class="hidden mt-3 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 rounded-lg text-xs transition-all">
+                  시청 기록 다시 보내기
+                </button>
+              </div>
+              <!-- Real-time Instruction Box -->
+              <div class="p-3.5 bg-blue-50/50 rounded-xl border border-blue-100 text-xs text-slate-600 space-y-1">
+                <p class="font-bold text-blue-700 flex items-center">
+                  <i data-lucide="info" class="w-4 h-4 mr-1 text-blue-500"></i> 스마트 진도관리 안내사항
+                </p>
+                <ul class="list-disc pl-4 space-y-0.5 text-slate-500">
+                  <li>영상을 <strong>건너뛰거나 앞으로 탐색하는 행위</strong>는 시스템에 의해 즉시 차단됩니다.</li>
+                  <li><strong>광고가 송출되는 시간은 실제 시청 인정 시간에서 완전히 제외</strong>됩니다. 오직 학습 영상이 상영되는 본래 시간만 누적 가산됩니다.</li>
+                  <li>영상을 임의의 배속으로 시청하는 경우, <strong>정속 환산 누적되어 부족할 경우 시청 완료가 인정되지 않습니다</strong>.</li>
+                  <li>실제 비디오 전체 진행 시간 동안 자리를 지키고 온전히 이수해야 '수강완료'가 기록됩니다.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-blue-100 py-6 mt-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-400">
+        <p>© 2026 단원고등학교 2학년 온라인 수업관리 시스템. All Rights Reserved.</p>
+        <p>Designed by 최성보 | 스마트 가드 엔진 v3.0 (하이브리드 저작권 브릿지 탑재)</p>
+      </div>
+    </footer>
+    <!-- UI ALERTS AND NOTIFICATION TOASTS -->
+    <div id="alertToast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-xl flex items-center space-x-3 transition-all transform translate-y-20 opacity-0 z-50">
+      <div class="text-blue-400" id="toastIconContainer">
+        <i data-lucide="alert-circle" class="w-5 h-5"></i>
+      </div>
+      <p class="text-xs font-bold" id="toastMessage">토스트 경고창 영역</p>
+    </div>
+    <!-- FULLSCREEN MODAL FOR PRE-EXPORT RENDERING -->
+    <div id="pdfExportModal" class="hidden fixed top-0 left-0 bg-white z-50 overflow-y-auto w-[210mm] min-h-[297mm] pt-[15mm] pb-[15mm] pl-[4mm] pr-[10mm] mx-auto text-slate-950" style="opacity: 0.99; box-sizing: border-box; line-height: 1.5;">
+      <div class="space-y-8 w-full" id="pdfExportContent">
+        <div class="text-center space-y-3 pb-6 border-b-2 border-slate-900">
+          <h1 class="text-2xl font-black text-slate-950 tracking-tight" id="pdfReportTitle">국어 최성보 온라인 추가학습 이수현황</h1>
+          <p class="text-xs text-slate-600 font-bold" id="pdfReportSubHeader">2026학년도 단원고등학교 2학년</p>
+        </div>
+        
+        <table class="w-full text-xs text-left border-collapse border border-slate-400 mx-auto">
+          <thead>
+            <tr class="bg-slate-100 text-slate-800 font-bold border-b border-slate-400">
+              <th class="py-2 px-3 border border-slate-300 text-center w-[8%]">순번</th>
+              <th class="py-2 px-3 border border-slate-300 text-center w-[10%]">학번</th>
+              <th class="py-2 px-3 border border-slate-300 text-center w-[20%]">이름</th>
+              <th class="py-2 px-3 border border-slate-300 text-center w-[24%]">수강 과목명</th>
+              <th class="py-2 px-3 border border-slate-300 text-center w-[24%]">완료 차시 / 전체</th>
+              <th class="py-2 px-3 border border-slate-300 text-center w-[14%]">이수율</th>
+            </tr>
+          </thead>
+          <tbody id="pdfTableBody" class="divide-y divide-slate-300">
+            <!-- Dynamically populated during export -->
+          </tbody>
+        </table>
+        <div class="pt-8 border-t border-slate-300 text-center space-y-6">
+          <p class="text-[11px] text-slate-600 leading-relaxed">
+            위 학생들의 2026학년도 단원고등학교 2학년 온라인 추가학습 이수현황을 확인합니다.
+          </p>
+          <div class="flex justify-center items-center pt-4">
+            <div class="text-center">
+              <p class="text-sm font-bold text-slate-950 tracking-widest" id="pdfReportDateStamp">2026년 05월 24일</p>
+              <p class="text-base font-extrabold text-slate-950 mt-3 tracking-wider">단 원 고 등 학 교 장</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 중복 로그인 차단 커스텀 알림 모달 -->
+    <div id="sessionBlockModal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl border border-blue-100">
+        <div class="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto">
+          <i data-lucide="shield-alert" class="w-10 h-10"></i>
+        </div>
+        <h3 id="sessionBlockTitle" class="text-lg font-bold text-slate-900">중복 로그인 감지</h3>
+        <p id="sessionBlockMessage" class="text-xs text-slate-500 leading-relaxed">다른 기기 또는 브라우저 탭에서 동일한 학번으로 로그인이 발생하여 영상 재생이 중단되고 자동 로그아웃됩니다.</p>
+        <button onclick="closeSessionBlockModalAndLogout()" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-md">
+          확인 및 로그아웃
+        </button>
+      </div>
+    </div>
+    <!-- MAIN SYSTEM ENGINE SCRIPTS -->
+    <script>
+      // ==========================================
+      // GLOBAL STATE
+      // ==========================================
+      let systemData = {
+        users: [],
+        subjects: [],
+        progress: [],
+        mapping: []
+      };
+      
+      let loggedInUser = null;
+      let youtubePlayer = null;
+      let playerTrackerInterval = null;
+      let isYTApiLoaded = false; // YouTube API 준비 완료 상태 기록용
+      
+      // 보안 수강 관리 및 세션 보안 전역 상태 변수
+      let lastSafeTime = 0;
+      let realTimeWatched = 0;   // 실제 플레이 한 절대 시간(초) 누적값
+      let lastTickTime = 0;       // 직전 모니터링 분석 시각 저장용
+      
+      // 광고 감지 추적용 전역 변수
+      let originalVideoDuration = 0; // 유튜브 영상 자체의 실제 정적 전체 재생시간 기록
+      let isAdScreenCurrently = false; // 현재 광고 상영 여부 플래그
+      
+      let currentSessionToken = ""; // 현재 로그인 세션 ID
+      let lastHeartbeatTime = 0;    // 마지막 하트비트 시점 기록
+      let globalHeartbeatInterval = null; // 대시보드 상태에서도 작동하는 백그라운드 세션 정밀 타이머
+      const sessionChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('danwon_g2_session_guard_channel') : null;
+      
+      let activeStudentSubject = "";
+      let activeStudentLecture = null;
+      let activeTeacherTab = 'subject';
+      let selectedSubjectName = "";
+      let selectedClassId = "";
+      
+      // 페일세이프 검증 락 전역 변수
+      let failSafeLoadTimer = null;
+      let completionState = "idle"; // idle, sending, done, failed
+      let lectureStartSent = false; // 이번 재생의 시작 시각을 서버에 알렸는지 여부
+      let lectureStartOk = false;   // 서버가 시작을 받아들였는지
+      let lastStartTry = 0;
+      let watchPingSent = 0;        // 서버에 이미 알린 시청 시간(초)
+      let pausedByHidden = false;   // 화면을 벗어나 자동으로 멈췄는지
+      let stillCheckState = "none"; // 30분 확인: none | asking | paused | done
+      let stillCheckTimer = null;
+      const STILL_CHECK_AT = 1800;  // 30분 이상 영상은 30분 시점에 한 번 확인해요
+      const STILL_CHECK_WAIT = 30;  // 30초 안에 누르지 않으면 멈춰요
+      let isExternalWatch = false;  // 유튜브 외부 시청으로 진행 중인지 여부
+      let embedRetryUsed = false;   // 일시적 재생 오류로 다시 시도했는지 여부
+      // ========================================================
+      // 탭/창 브로드캐스트 채널을 통한 실시간 중복 로그인 강제 로그아웃 감지 리스너
+      // ========================================================
+      if (sessionChannel) {
+        sessionChannel.onmessage = function(event) {
+          if (!loggedInUser || loggedInUser.구분 !== "학생") return;
+          
+          const msg = event.data;
+          
+          if (
+            msg.type === "DUPLICATE_LOGIN_ALERT" && 
+            String(msg.studentId).trim() === String(loggedInUser.아이디).trim() && 
+            String(msg.sessionToken).trim() !== String(currentSessionToken).trim()
+          ) {
+            handleSessionEnded("같은 기기의 다른 브라우저 탭 또는 창에서 새로운 로그인이 감지되었습니다. 이전 화면은 안전을 위해 자동 로그아웃됩니다.", "DUPLICATE");
+          }
+        };
+      }
+      // YouTube IFrame Player API 비동기 로딩 대리인 함수 등록
+      window.onYouTubeIframeAPIReady = function() {
+        isYTApiLoaded = true;
+        console.log("[System] YouTube IFrame API Loaded & Ready.");
+      };
+      // YouTube API 동적 비동기 주입
+      function loadYouTubeApiScriptDirectly() {
+        if (window.YT && window.YT.Player) {
+          isYTApiLoaded = true;
+          return;
+        }
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      }
+      // ==========================================
+      // SERVER BRIDGE (google.script.run)
+      // ==========================================
+      // ▼ Netlify 등 외부 사이트에서 열 때: Apps Script 웹앱 주소(/exec로 끝나는 주소)를 넣으세요.
+      //   Apps Script 웹앱 주소로 직접 열 때는 비워 둬도 됩니다.
+      const API_URL = "https://script.google.com/macros/s/AKfycbwYm8y_KX-fZ3_LLMCyM8URx9quh_yLKpKoMuTS_qtzU9rWUmwKFmU8OYGA4xfO32lk-A/exec";
+      const SESSION_KEY = "danwon_g2_session_token";
+      const HEARTBEAT_MS = 30000;
+
+      function readStoredToken() {
+        try { return sessionStorage.getItem(SESSION_KEY) || ""; } catch (e) { return ""; }
+      }
+      function storeToken(token) {
+        try {
+          if (token) sessionStorage.setItem(SESSION_KEY, token);
+          else sessionStorage.removeItem(SESSION_KEY);
+        } catch (e) {}
+      }
+      function escapeHtml(value) {
+        return String(value === null || value === undefined ? "" : value).replace(/[&<>"']/g, ch => (
+          { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]
+        ));
+      }
+      // 서버 함수를 호출합니다. 통신 오류는 잠시 뒤 다시 시도하고, 세션이 끊기면 안내창을 띄웁니다.
+      function isInsideAppsScript() {
+        return !!(window.google && google.script && google.script.run);
+      }
+      // Apps Script 안에서는 google.script.run으로, 외부 사이트에서는 웹앱 주소로 요청합니다.
+      function sendToServer(method, args) {
+        if (isInsideAppsScript()) {
+          return new Promise((resolve, reject) => {
+            google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[method].apply(null, args);
+          });
+        }
+        return fetch(API_URL, {
+          method: "POST",
+          // text/plain으로 보내야 브라우저의 사전 확인(CORS) 없이 Apps Script에 전달됩니다.
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ method: method, args: args })
+        }).then(response => {
+          if (!response.ok) throw new Error("HTTP " + response.status);
+          return response.json();
+        });
+      }
+      // 서버 함수를 호출합니다. 통신 오류는 잠시 뒤 다시 시도하고, 세션이 끊기면 안내창을 띄웁니다.
+      function callServer(method, args, options) {
+        const opts = Object.assign({ retries: 2, silent: false }, options);
+        return new Promise((resolve, reject) => {
+          const attempt = (left) => {
+            sendToServer(method, args).then(res => {
+              if (res && res.ok) {
+                resolve(res);
+                return;
+              }
+              const error = new Error((res && res.message) || "서버 응답을 확인하지 못했습니다.");
+              error.sessionEnded = !!res && (res.code === "DUPLICATE" || res.code === "EXPIRED");
+              error.code = (res && res.code) || "";
+              if (error.sessionEnded && !opts.silent) {
+                handleSessionEnded(error.message, res.code);
+              }
+              reject(error);
+            }, () => {
+              if (left > 0) {
+                setTimeout(() => attempt(left - 1), 1500);
+              } else {
+                reject(new Error("서버에 연결하지 못했습니다. 인터넷 연결을 확인해 주세요."));
+              }
+            });
+          };
+          attempt(opts.retries);
+        });
+      }
+      function showLoginScreen() {
+        const dl = document.getElementById("initialDataLoader");
+        if (dl) dl.classList.add("hidden");
+        const ls = document.getElementById("loginSection");
+        if (ls) ls.classList.remove("hidden");
+      }
+      function initApp() {
+        refreshIcons();
+        loadYouTubeApiScriptDirectly();
+        // 보장지도에서 [온라인 수업관리 열기]로 들어온 경우: 교사 이름으로 바로 로그인
+        let sso = "";
+        try { sso = new URLSearchParams(location.search).get("sso") || ""; } catch (e) {}
+        if (sso) {
+          try { history.replaceState(null, "", location.pathname); } catch (e) {}
+          callServer("ssoLogin", [sso], { retries: 1, silent: true })
+            .then(res => enterApp(res, true))
+            .catch(err => {
+              showLoginScreen();
+              showLoginError(err.message);
+            });
+          return;
+        }
+        const token = readStoredToken();
+        if (!token) {
+          showLoginScreen();
+          return;
+        }
+        // 새로고침해도 로그인이 유지됩니다.
+        callServer("resumeSession", [token], { silent: true })
+          .then(res => enterApp(res, false))
+          .catch(() => {
+            storeToken("");
+            showLoginScreen();
+          });
+      }
+      function enterApp(res, isNewLogin) {
+        currentSessionToken = res.token;
+        loggedInUser = res.user;
+        systemData = res.data;
+        storeToken(res.token);
+        const dl = document.getElementById("initialDataLoader");
+        if (dl) dl.classList.add("hidden");
+        finalizeLogin(isNewLogin);
+      }
+      // ==========================================
+      // TOAST NOTIFICATION ENGINE
+      // ==========================================
+      function showToast(message, iconName = "alert-circle") {
+        const toast = document.getElementById("alertToast");
+        const msgHolder = document.getElementById("toastMessage");
+        const iconHolder = document.getElementById("toastIconContainer");
+        
+        if (!toast || !msgHolder || !iconHolder) return;
+        
+        msgHolder.innerText = message;
+        iconHolder.innerHTML = `<i data-lucide="${iconName}" class="w-5 h-5"></i>`;
+        refreshIcons();
+        
+        toast.classList.remove("translate-y-20", "opacity-0");
+        toast.classList.add("translate-y-0", "opacity-100");
+        
+        setTimeout(() => {
+          toast.classList.remove("translate-y-0", "opacity-100");
+          toast.classList.add("translate-y-20", "opacity-0");
+        }, 3500);
+      }
+      function togglePasswordVisibility(fieldId, iconId) {
+        const field = document.getElementById(fieldId);
+        const icon = document.getElementById(iconId);
+        
+        if (!field || !icon) return;
+        
+        if (field.classList.contains("secure-mask-input")) {
+          field.classList.remove("secure-mask-input");
+          icon.setAttribute("data-lucide", "eye-off");
+        } else {
+          field.classList.add("secure-mask-input");
+          icon.setAttribute("data-lucide", "eye");
+        }
+        refreshIcons();
+      }
+      // ==========================================
+      // LOGIN SYSTEM
+      // ==========================================
+      let isLoggingIn = false;
+      function showLoginError(message) {
+        showToast(message, "shield-alert");
+        const errorArea = document.getElementById("loginErrorArea");
+        const errorText = document.getElementById("loginErrorText");
+        if (errorArea && errorText) {
+          errorText.innerText = message;
+          errorArea.classList.remove("hidden");
+          refreshIcons();
+        }
+      }
+      function triggerAlternativeLogin() {
+        if (isLoggingIn) return;
+        const inputId = document.getElementById("loginId").value.trim();
+        const inputPw = document.getElementById("loginPw").value.trim();
+        const errorArea = document.getElementById("loginErrorArea");
+        if (errorArea) errorArea.classList.add("hidden");
+        if (!inputId || !inputPw) {
+          showLoginError("학번/아이디와 비밀번호를 모두 입력해 주세요.");
+          return;
+        }
+        const label = document.getElementById("loginBtnLabel");
+        isLoggingIn = true;
+        if (label) label.innerText = "확인 중...";
+        callServer("login", [inputId, inputPw], { retries: 1 })
+          .then(res => enterApp(res, true))
+          .catch(err => showLoginError(err.message))
+          .finally(() => {
+            isLoggingIn = false;
+            if (label) label.innerText = "로그인";
+          });
+      }
+      document.addEventListener("keydown", function(event) {
+        const loginSec = document.getElementById("loginSection");
+        if (event.key === "Enter" && loginSec && !loginSec.classList.contains("hidden")) {
+          triggerAlternativeLogin();
+        }
+      });
+      function finalizeLogin(isNewLogin) {
+        const loginSec = document.getElementById("loginSection");
+        if (loginSec) loginSec.classList.add("hidden");
+        
+        const errorArea = document.getElementById("loginErrorArea");
+        if (errorArea) errorArea.classList.add("hidden");
+        const profileArea = document.getElementById("userProfileArea");
+        if (profileArea) profileArea.classList.remove("hidden");
+        const headerName = document.getElementById("headerUserName");
+        if (headerName) headerName.innerText = loggedInUser.이름;
+        const headerRole = document.getElementById("headerUserRole");
+        if (headerRole) headerRole.innerText = `${loggedInUser.구분} 계정`;
+        
+        if (isNewLogin) showToast(`${loggedInUser.이름}님 환영합니다!`, "check-circle");
+        if (loggedInUser.구분 === "학생") {
+          if (sessionChannel && isNewLogin) {
+            sessionChannel.postMessage({
+              type: "DUPLICATE_LOGIN_ALERT",
+              studentId: loggedInUser.아이디,
+              sessionToken: currentSessionToken
+            });
+          }
+          initStudentSpace();
+          startGlobalHeartbeatWatcher(); 
+        } else {
+          initTeacherSpace();
+        }
+      }
+      function startGlobalHeartbeatWatcher() {
+        if (globalHeartbeatInterval) {
+          clearInterval(globalHeartbeatInterval);
+        }
+        // 학생들의 확인 요청이 한꺼번에 몰리지 않도록 간격을 조금씩 다르게 둡니다.
+        globalHeartbeatInterval = setInterval(sendRemoteSessionHeartbeat, HEARTBEAT_MS + Math.floor(Math.random() * 5000));
+      }
+      function logout() {
+        const token = currentSessionToken;
+        destroyPlayer();
+        
+        if (globalHeartbeatInterval) {
+          clearInterval(globalHeartbeatInterval);
+          globalHeartbeatInterval = null;
+        }
+        if (token) {
+          callServer("logoutSession", [token], { retries: 0, silent: true }).catch(() => {});
+        }
+        storeToken("");
+        loggedInUser = null;
+        currentSessionToken = "";
+        systemData = { users: [], subjects: [], progress: [], mapping: [] };
+        resetScreensAfterLogout();
+        
+        const profileArea = document.getElementById("userProfileArea");
+        if (profileArea) profileArea.classList.add("hidden");
+        const studentSec = document.getElementById("studentSection");
+        if (studentSec) studentSec.classList.add("hidden");
+        const dashboardSec = document.getElementById("dashboardSection");
+        if (dashboardSec) dashboardSec.classList.add("hidden");
+        
+        const errorArea = document.getElementById("loginErrorArea");
+        if (errorArea) errorArea.classList.add("hidden");
+        const loginIdInput = document.getElementById("loginId");
+        if (loginIdInput) loginIdInput.value = "";
+        
+        const loginPw = document.getElementById("loginPw");
+        if (loginPw) {
+          loginPw.value = "";
+          if (!loginPw.classList.contains("secure-mask-input")) {
+            loginPw.classList.add("secure-mask-input");
+          }
+        }
+        const pwIcon = document.getElementById("pwToggleIcon");
+        if (pwIcon) pwIcon.setAttribute("data-lucide", "eye");
+        
+        refreshIcons();
+        showLoginScreen();
+      }
+      // 다음 사용자에게 이전 사용자의 화면이 남지 않도록 비웁니다.
+      function resetScreensAfterLogout() {
+        activeStudentSubject = "";
+        selectedSubjectName = "";
+        selectedClassId = "";
+        const emptyRow = (cols, text) => `<tr><td colspan="${cols}" class="py-8 text-center text-slate-400 font-normal">${text}</td></tr>`;
+        document.getElementById("studentLectureList").innerHTML = '<p class="text-xs text-slate-400 text-center py-6">과목을 먼저 탭하여 수강 차시 목록을 확인해 주세요.</p>';
+        document.getElementById("studentSubjectList").innerHTML = "";
+        document.getElementById("subjectBtnList").innerHTML = "";
+        document.getElementById("subjectStudentTableBody").innerHTML = emptyRow(5, "과목을 선택하시면 해당 과목의 수강 명단 및 이수 상태가 표시됩니다.");
+        document.getElementById("classStudentTableBody").innerHTML = emptyRow(4, "학급 버튼을 선택하시면 소속 학생들의 수강 통계가 표시됩니다.");
+        document.getElementById("selectedSubjectMeta").classList.add("hidden");
+        document.getElementById("individualReportCard").classList.add("hidden");
+        document.getElementById("searchStudentId").value = "";
+        resetSearchPlaceholder();
+        document.getElementById("playingSubjectName").innerText = "온라인 학습 터";
+        document.getElementById("playingLectureTitle").innerText = "학습할 동영상을 선택해 주세요.";
+        for (let i = 1; i <= 9; i++) {
+          const btn = document.getElementById(`classBtn-${String(i).padStart(2, '0')}`);
+          if (btn) btn.className = "py-2 rounded-lg font-bold text-sm text-slate-700 hover:bg-white hover:shadow-xs transition-all";
+        }
+      }
+      // 시트의 차시와 맞는 완료 기록만 셉니다. (중복 기록이나 삭제된 차시로 100%를 넘지 않도록)
+      // 수강완료 기록 찾기·시각 표시 (예: 2026-12-29 14:05 → 12/29 14:05)
+      function findCompletion(studentId, subjectName, unit) {
+        return systemData.progress.find(p =>
+          String(p.학번).trim() === String(studentId).trim() && p.과목명 === subjectName &&
+          Number(p.차시) === Number(unit) && p.상태 === "완료") || null;
+      }
+      function shortWhen(v) {
+        const m = String(v || "").match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/);
+        return m ? `${Number(m[2])}/${Number(m[3])} ${m[4]}:${m[5]}` : "";
+      }
+      // 시청 시간: '12분 43초'(새 기록) 또는 '12.7'(예전 기록, 분) → 초
+      function watchSeconds(v) {
+        const t = String(v || "").trim();
+        if (!t) return 0;
+        const m = t.match(/(\d+)\s*분/), sec = t.match(/(\d+)\s*초/);
+        if (m || sec) return (m ? Number(m[1]) * 60 : 0) + (sec ? Number(sec[1]) : 0);
+        const n = parseFloat(t);
+        return n > 0 ? Math.round(n * 60) : 0;
+      }
+      function watchLabel(sec) {
+        sec = Math.round(Number(sec) || 0);
+        if (sec <= 0) return "";
+        const m = Math.floor(sec / 60), s = sec % 60;
+        return m ? `${m}분 ${s}초` : `${s}초`;
+      }
+      function completionTip(p) {
+        if (!p) return "";
+        const parts = [];
+        if (p.시작일시) parts.push("시작 " + p.시작일시);
+        if (p.완료일시) parts.push("완료 " + p.완료일시);
+        if (p.시청분) parts.push("시청 " + watchLabel(watchSeconds(p.시청분)));
+        return parts.join(" · ");
+      }
+      // 확인이 필요한 수강완료 기록: 외부 앱 시청, 짧은 시청 시간 (한 번에 한 영상만 인정되어 시간 겹침은 생기지 않아요)
+      function parseWhen(v) {
+        const m = String(v || "").match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})(?::(\d{2}))?/);
+        return m ? new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] || 0)).getTime() : 0;
+      }
+      function completionFlags(p) {
+        if (!p) return [];
+        const flags = [];
+        if (String(p.외부 || "") === "예") flags.push("외부 앱 시청(재생 확인 불가)");
+        const lec = systemData.subjects.find(s => s.과목명 === p.과목명 && Number(s.차시) === Number(p.차시));
+        const len = lec ? Number(lec.영상길이초) || 0 : 0;
+        const ws = watchSeconds(p.시청분);
+        if (len > 0 && ws > 0 && ws < len * 0.9) flags.push(`시청 시간 짧음(${watchLabel(ws)} / 영상 ${watchLabel(len)})`);
+        return flags;
+      }
+      function subjectFlagCount(studentId, subjectName) {
+        return systemData.subjects.filter(s => s.과목명 === subjectName)
+          .filter(s => completionFlags(findCompletion(studentId, s.과목명, s.차시)).length > 0).length;
+      }
+      function lastCompletion(studentId, subjectName) {
+        let last = "";
+        systemData.progress.forEach(p => {
+          if (String(p.학번).trim() === String(studentId).trim() && p.과목명 === subjectName && p.상태 === "완료" && p.완료일시 && p.완료일시 > last) last = p.완료일시;
+        });
+        return last;
+      }
+      function countCompletedUnits(studentId, subjectName) {
+        return systemData.subjects.filter(s => s.과목명 === subjectName).filter(s =>
+          systemData.progress.some(p =>
+            String(p.학번).trim() === String(studentId).trim() &&
+            p.과목명 === s.과목명 &&
+            Number(p.차시) === Number(s.차시) &&
+            p.상태 === "완료"
+          )
+        ).length;
+      }
+      // ==========================================
+      // TEACHER/MANAGER DASHBOARD SYSTEM
+      // ==========================================
+      function initTeacherSpace() {
+        const dashboardSec = document.getElementById("dashboardSection");
+        if (dashboardSec) dashboardSec.classList.remove("hidden");
+        calculateOverviewStats();
+        switchTab('subject');
+        renderSubjectSelectorButtons();
+      }
+      function calculateOverviewStats() {
+        const studentList = systemData.users.filter(u => u.구분 === "학생");
+        const totalStudEl = document.getElementById("statTotalStudents");
+        if (totalStudEl) totalStudEl.innerText = `${studentList.length}명`;
+        
+        const completedCount = systemData.progress.filter(p => p.상태 === "완료").length;
+        const compUnitEl = document.getElementById("statCompletedUnits");
+        if (compUnitEl) compUnitEl.innerText = `${completedCount}차시`;
+        
+        const uniqueSubjects = [...new Set(systemData.subjects.map(s => s.과목명))];
+        const totalSubjEl = document.getElementById("statTotalSubjects");
+        if (totalSubjEl) totalSubjEl.innerText = `${uniqueSubjects.length}개 과목`;
+        const avgProgressEl = document.getElementById("statAvgProgress");
+        if (studentList.length === 0) {
+          if (avgProgressEl) avgProgressEl.innerText = "0%";
+          return;
+        }
+        let totalRatiosSum = 0;
+        let countedStudents = 0; // 배정 과목이 있는 학생만 평균에 넣습니다.
+        studentList.forEach(st => {
+          const mappingSubjs = systemData.mapping.filter(m => String(m.학번).trim() === String(st.아이디).trim());
+          if (mappingSubjs.length === 0) return;
+          let studentCompleted = 0;
+          let studentTotalRequired = 0;
+          mappingSubjs.forEach(mapObj => {
+            studentTotalRequired += systemData.subjects.filter(s => s.과목명 === mapObj.과목).length;
+            studentCompleted += countCompletedUnits(st.아이디, mapObj.과목);
+          });
+          if (studentTotalRequired > 0) {
+            totalRatiosSum += (studentCompleted / studentTotalRequired);
+            countedStudents++;
+          }
+        });
+        const overallAverage = countedStudents > 0 ? Math.round((totalRatiosSum / countedStudents) * 100) : 0;
+        if (avgProgressEl) avgProgressEl.innerText = `${overallAverage}%`;
+      }
+      // ==========================================
+      // TAB SYSTEM
+      // ==========================================
+      function switchTab(tabId) {
+        activeTeacherTab = tabId;
+        
+        const tabs = ['subject', 'class', 'student'];
+        tabs.forEach(t => {
+          const btn = document.getElementById(`tabBtn-${t}`);
+          const panel = document.getElementById(`tabPanel-${t}`);
+          
+          if (!btn || !panel) return;
+          
+          if (t === tabId) {
+            btn.className = "flex-1 min-w-[120px] py-2.5 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center space-x-2 bg-blue-500 text-white shadow-sm";
+            panel.classList.remove("hidden");
+          } else {
+            btn.className = "flex-1 min-w-[120px] py-2.5 px-4 rounded-lg font-bold text-sm transition-all flex items-center justify-center space-x-2 text-slate-600 hover:bg-blue-50/50";
+            panel.classList.add("hidden");
+          }
+        });
+        if (tabId === 'class' && selectedClassId) {
+          selectClass(selectedClassId);
+        }
+      }
+      function renderSubjectSelectorButtons() {
+        const container = document.getElementById("subjectBtnList");
+        if (!container) return;
+        container.innerHTML = "";
+        // 영상이 아직 없는 과목도 학생이 배정돼 있으면 버튼을 보여 줍니다.
+        let subjectList = [...new Set(systemData.subjects.map(s => s.과목명).concat(systemData.mapping.map(m => m.과목)))].filter(Boolean);
+        const isSupervisor = loggedInUser.구분 === "관리자" || (loggedInUser.구분 === "교사" && loggedInUser.담당과목 === "담임");
+        // 띄어쓰기와 로마 숫자(Ⅰ·Ⅱ…)·전각 숫자 차이는 같은 과목으로 봐요. (예: 미적분Ⅰ = 미적분1)
+        const nsp = v => String(v || "").normalize("NFKC").replace(/\s+/g, "").toUpperCase().replace(/(^|[^A-Z])(III|II|IV|I)(?![A-Z])/g, (m, p, r) => p + ({ I: "1", II: "2", III: "3", IV: "4" })[r]);
+        let assignedList = [];
+        if (!isSupervisor && loggedInUser.구분 === "교사") {
+          // 담당과목이 여러 개면 쉼표로 구분해 적을 수 있습니다. (예: 국어, 수학) 띄어쓰기는 달라도 같은 과목으로 봐요.
+          assignedList = (loggedInUser.담당과목 || "").split(/[,，、]/).map(s => s.trim()).filter(Boolean);
+          subjectList = subjectList.filter(s => assignedList.some(a => nsp(a) === nsp(s)));
+        }
+        if (subjectList.length === 0) {
+          const why = assignedList.length
+            ? `담당과목(${escapeHtml(assignedList.join(", "))})에 등록된 영상이나 보충지도 대상 학생이 아직 없거나, 과목 이름이 보장지도의 과목명과 달라요.`
+            : "구글 스프레드시트 사용자 시트의 '담당과목' 란이 비어 있어요.";
+          container.innerHTML = `
+            <div class="p-6 bg-slate-50 border border-dashed border-blue-200 rounded-2xl text-center w-full">
+              <i data-lucide="folder-x" class="w-8 h-8 text-slate-400 mx-auto mb-2"></i>
+              <span class="text-xs text-slate-500 font-bold block">담당 또는 연동된 교과목 정보가 존재하지 않습니다.</span>
+              <p class="text-[10px] text-slate-400 mt-1">${why}</p>
+            </div>
+          `;
+          refreshIcons();
+          const metaSubjMeta = document.getElementById("selectedSubjectMeta");
+          if (metaSubjMeta) metaSubjMeta.classList.add("hidden");
+          
+          const tbody = document.getElementById("subjectStudentTableBody");
+          if (tbody) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="5" class="py-8 text-center text-slate-400 font-normal">
+                  <i data-lucide="shield-alert" class="w-8 h-8 mx-auto text-slate-300 mb-2"></i>
+                  담당과목이 부재하여 이수 현황을 불러오지 못했습니다.
+                </td>
+              </tr>
+            `;
+            refreshIcons();
+          }
+          return;
+        }
+        let selectedBtn = null;
+        subjectList.forEach(subj => {
+          const btn = document.createElement("button");
+          btn.innerText = subj;
+          btn.className = "px-4 py-2 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-xl text-xs font-bold transition-all border border-slate-200";
+          btn.onclick = () => loadSubjectStatus(subj, btn);
+          container.appendChild(btn);
+          if (subj === selectedSubjectName) selectedBtn = btn;
+        });
+        if (selectedBtn) loadSubjectStatus(selectedSubjectName, selectedBtn);
+      }
+      function loadSubjectStatus(subjectName, btnElement) {
+        selectedSubjectName = subjectName;
+        const subjectBtnList = document.getElementById("subjectBtnList");
+        if (subjectBtnList) {
+          const btns = subjectBtnList.children;
+          for (let b of btns) {
+            b.className = "px-4 py-2 bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-xl text-xs font-bold transition-all border border-slate-200";
+          }
+        }
+        if (btnElement) {
+          btnElement.className = "px-4 py-2 bg-blue-500 text-white rounded-xl text-xs font-bold transition-all border border-blue-500 shadow-sm shadow-blue-100";
+        }
+        const curriculum = systemData.subjects.filter(s => s.과목명 === subjectName);
+        const totalLectures = curriculum.length;
+        const mappedStudentIds = systemData.mapping
+          .filter(m => m.과목 === subjectName)
+          .map(m => String(m.학번).trim());
+        const matchedStudents = systemData.users.filter(u => 
+          u.구분 === "학생" && mappedStudentIds.includes(String(u.아이디).trim())
+        );
+        matchedStudents.sort((a, b) => String(a.아이디).localeCompare(String(b.아이디)));
+        let completedAggregate = 0;
+        const totalUnitsProduct = matchedStudents.length * totalLectures;
+        const tbody = document.getElementById("subjectStudentTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+        const metaSubjMeta = document.getElementById("selectedSubjectMeta");
+        if (matchedStudents.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-normal">이 과목에 매핑 설정된 학생이 없습니다.</td></tr>`;
+          if (metaSubjMeta) metaSubjMeta.classList.add("hidden");
+          return;
+        }
+        matchedStudents.forEach(student => {
+          const completedLecturesForStudent = countCompletedUnits(student.아이디, subjectName);
+          completedAggregate += completedLecturesForStudent;
+          const ratio = totalLectures > 0 ? (completedLecturesForStudent / totalLectures) : 0;
+          const pct = Math.round(ratio * 100);
+          const tr = document.createElement("tr");
+          tr.className = "hover:bg-slate-50 transition-colors";
+          tr.innerHTML = `
+            <td class="py-3 px-4 text-slate-900 font-semibold">${escapeHtml(student.아이디)}</td>
+            <td class="py-3 px-4 text-slate-700">${escapeHtml(student.이름)}</td>
+            <td class="py-3 px-4"><span class="bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded-md font-bold">${escapeHtml(subjectName)}</span></td>
+            <td class="py-3 px-4 text-center text-slate-600 font-bold">${completedLecturesForStudent} / ${totalLectures}${(() => { const w = shortWhen(lastCompletion(student.아이디, subjectName)); return w ? `<div class="text-[10px] text-slate-400 font-normal mt-0.5">최근 완료 ${escapeHtml(w)}</div>` : ""; })()}${(() => { const n = subjectFlagCount(student.아이디, subjectName); return n ? `<div class="text-[10px] text-amber-600 font-extrabold mt-0.5" title="학생 검색에서 이 학생을 열면 차시별 이유를 볼 수 있어요">⚠ 확인 필요 ${n}건</div>` : ""; })()}</td>
+            <td class="py-3 px-4 text-right">
+              <div class="flex items-center justify-end space-x-2">
+                <div class="w-24 bg-slate-100 rounded-full h-2 overflow-hidden hidden sm:block">
+                  <div class="bg-blue-500 h-full rounded-full" style="width: ${pct}%"></div>
+                </div>
+                <span class="text-xs font-bold ${pct === 100 ? 'text-emerald-600' : 'text-slate-600'}">${pct}%</span>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+        const metaSubjName = document.getElementById("metaSubjectName");
+        if (metaSubjName) metaSubjName.innerText = subjectName;
+        const metaSubjLect = document.getElementById("metaSubjectLectures");
+        if (metaSubjLect) metaSubjLect.innerText = totalLectures ? `총 등록 차시: ${totalLectures}개 차시` : "등록된 영상이 아직 없어요";
+        const metaSubjCount = document.getElementById("metaSubjectStudentCount");
+        if (metaSubjCount) metaSubjCount.innerText = `${matchedStudents.length}명`;
+        
+        const finalRatioPct = totalUnitsProduct > 0 ? Math.round((completedAggregate / totalUnitsProduct) * 100) : 0;
+        const metaSubjRatio = document.getElementById("metaSubjectCompleteRatio");
+        if (metaSubjRatio) metaSubjRatio.innerText = `${finalRatioPct}%`;
+        
+        if (metaSubjMeta) metaSubjMeta.classList.remove("hidden");
+      }
+      // ==========================================
+      // TAB PANEL 2: CLASS COMPILER
+      // ==========================================
+      function selectClass(classId) {
+        selectedClassId = classId;
+        for (let i = 1; i <= 9; i++) {
+          const padded = String(i).padStart(2, '0');
+          const btn = document.getElementById(`classBtn-${padded}`);
+          if (btn) {
+            if (padded === classId) {
+              btn.className = "py-2 rounded-lg font-bold text-sm bg-blue-500 text-white shadow-xs border border-blue-500 transition-all";
+            } else {
+              btn.className = "py-2 rounded-lg font-bold text-sm text-slate-700 hover:bg-white hover:shadow-xs transition-all";
+            }
+          }
+        }
+        const classStudents = systemData.users.filter(u => {
+          if (u.구분 !== "학생") return false;
+          const idStr = String(u.아이디).trim();
+          if (idStr.length < 5) return false;
+          
+          const extractedClass = idStr.substring(1, 3);
+          return extractedClass === classId;
+        });
+        classStudents.sort((a, b) => String(a.아이디).localeCompare(String(b.아이디)));
+        const tbody = document.getElementById("classStudentTableBody");
+        if (!tbody) return;
+        tbody.innerHTML = "";
+        if (classStudents.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-400 font-normal">해당 반에 등록된 학생 정보가 존재하지 않습니다.</td></tr>`;
+          return;
+        }
+        classStudents.forEach(st => {
+          const mappingSubjs = systemData.mapping.filter(m => String(m.학번).trim() === String(st.아이디).trim());
+          
+          const tr = document.createElement("tr");
+          tr.className = "hover:bg-slate-50 transition-colors border-b border-blue-50";
+          
+          let subjectsBadgeHTML = "";
+          let subjectsProgressHTML = "";
+          if (mappingSubjs.length === 0) {
+            subjectsBadgeHTML = '<span class="text-xs text-slate-300">미배정</span>';
+            subjectsProgressHTML = '<span class="text-xs text-slate-300">-</span>';
+          } else {
+            mappingSubjs.forEach(mapObj => {
+              subjectsBadgeHTML += `
+                <div class="h-10 flex items-center">
+                  <span class="inline-block bg-blue-50 text-blue-700 text-xs px-2.5 py-1 rounded font-bold border border-blue-100">${escapeHtml(mapObj.과목)}</span>
+                </div>
+              `;
+              const syllabus = systemData.subjects.filter(s => s.과목명 === mapObj.과목);
+              const requiredLectures = syllabus.length;
+              const completedLectures = countCompletedUnits(st.아이디, mapObj.과목);
+              const pct = requiredLectures > 0 ? Math.round((completedLectures / requiredLectures) * 100) : 0;
+              subjectsProgressHTML += `
+                <div class="flex items-center space-x-3 h-10">
+                  <span class="text-xs text-slate-500 font-bold min-w-[70px] text-right">${completedLectures} / ${requiredLectures} 차시</span>
+                  <div class="w-32 bg-slate-100 rounded-full h-2 overflow-hidden flex-shrink-0">
+                    <div class="bg-blue-500 h-full rounded-full transition-all" style="width: ${pct}%"></div>
+                  </div>
+                  <span class="text-xs font-extrabold text-slate-800 min-w-[40px] text-right">${pct}%</span>
+                </div>
+              `;
+            });
+          }
+          tr.innerHTML = `
+            <td class="py-4 px-4 font-bold text-slate-900 align-top">${escapeHtml(st.아이디)}</td>
+            <td class="py-4 px-4 text-slate-700 align-top">${escapeHtml(st.이름)}</td>
+            <td class="py-4 px-4 align-top space-y-1">${subjectsBadgeHTML}</td>
+            <td class="py-4 px-4 align-top space-y-1">${subjectsProgressHTML}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+      // ==========================================
+      // TAB PANEL 3: INDIVIDUAL STUDENT SEARCH
+      // ==========================================
+      function resetSearchPlaceholder() {
+        const placeholder = document.getElementById("noSearchPlaceholder");
+        if (!placeholder) return;
+        placeholder.classList.remove("hidden");
+        placeholder.innerHTML = `
+          <i data-lucide="search-code" class="w-12 h-12 text-blue-300 mx-auto mb-3"></i>
+          <h4 class="text-slate-700 font-bold text-sm">학생 조회 대기 중</h4>
+          <p class="text-slate-400 text-xs mt-1">상단의 학번 검색 창을 사용하여 조회하려는 학생의 데이터를 즉시 확인해 보세요.</p>
+        `;
+        refreshIcons();
+      }
+      function liveSearchStudent() {
+        const keyword = document.getElementById("searchStudentId").value.trim();
+        const placeholder = document.getElementById("noSearchPlaceholder");
+        const reportCard = document.getElementById("individualReportCard");
+        if (!placeholder || !reportCard) return;
+        if (keyword.length < 3) {
+          resetSearchPlaceholder();
+          placeholder.classList.remove("hidden");
+          reportCard.classList.add("hidden");
+          return;
+        }
+        const student = systemData.users.find(u => u.구분 === "학생" && String(u.아이디).trim() === keyword);
+        if (!student) {
+          placeholder.innerHTML = `
+            <i data-lucide="help-circle" class="w-12 h-12 text-rose-300 mx-auto mb-3"></i>
+            <h4 class="text-rose-600 font-bold text-sm">해당 학번 학생이 없습니다</h4>
+            <p class="text-slate-400 text-xs mt-1">학번 5자리를 다시 검토해 보시길 바랍니다.</p>
+          `;
+          refreshIcons();
+          placeholder.classList.remove("hidden");
+          reportCard.classList.add("hidden");
+          return;
+        }
+        placeholder.classList.add("hidden");
+        reportCard.classList.remove("hidden");
+        const repName = document.getElementById("reportStudentName");
+        if (repName) repName.innerHTML = `${escapeHtml(student.이름)} <span class="text-sm font-normal text-blue-200">(${escapeHtml(student.아이디)})</span>`;
+        const mappingSubjs = systemData.mapping.filter(m => String(m.학번).trim() === String(student.아이디).trim());
+        const repCount = document.getElementById("reportTargetSubjectsCount");
+        if (repCount) repCount.innerText = `${mappingSubjs.length}과목`;
+        const listContainer = document.getElementById("reportSubjectList");
+        if (!listContainer) return;
+        listContainer.innerHTML = "";
+        let globalTotalReq = 0;
+        let globalTotalComp = 0;
+        if (mappingSubjs.length === 0) {
+          listContainer.innerHTML = `<div class="p-6 text-center text-xs text-slate-400">배정된 과목이 존재하지 않습니다.</div>`;
+          const repAvg = document.getElementById("reportAverageRate");
+          if (repAvg) repAvg.innerText = "0%";
+          return;
+        }
+        mappingSubjs.forEach(m => {
+          const syllabus = systemData.subjects.filter(s => s.과목명 === m.과목);
+          const required = syllabus.length;
+          globalTotalReq += required;
+          let completedCount = 0;
+          const unitsStatusList = [];
+          const flagNotes = [];
+          syllabus.forEach(s => {
+            const done = findCompletion(student.아이디, s.과목명, s.차시);
+            if (done) {
+              completedCount++;
+              const when = shortWhen(done.완료일시);
+              const flags = completionFlags(done);
+              if (flags.length) {
+                flagNotes.push(`${s.차시}차시: ${flags.join(", ")}`);
+                unitsStatusList.push(`<span title="${escapeHtml(completionTip(done) + " · 확인 필요: " + flags.join(", "))}" class="bg-amber-100 text-amber-800 text-[10px] px-2.5 py-1 rounded font-extrabold">⚠ ${escapeHtml(s.차시)}차시 수강완료${when ? " · " + escapeHtml(when) : ""}</span>`);
+              } else {
+                unitsStatusList.push(`<span title="${escapeHtml(completionTip(done))}" class="bg-emerald-100 text-emerald-800 text-[10px] px-2.5 py-1 rounded font-extrabold">${escapeHtml(s.차시)}차시 수강완료${when ? " · " + escapeHtml(when) : ""}</span>`);
+              }
+            } else {
+              unitsStatusList.push(`<span class="bg-slate-100 text-slate-400 text-[10px] px-2.5 py-1 rounded font-bold">${escapeHtml(s.차시)}차시 미완료</span>`);
+            }
+          });
+          globalTotalComp += completedCount;
+          const ratioPct = required > 0 ? Math.round((completedCount / required) * 100) : 0;
+          const row = document.createElement("div");
+          row.className = "p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50/50 transition-colors";
+          row.innerHTML = `
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="font-extrabold text-slate-950 text-sm">${escapeHtml(m.과목)}</span>
+                <span class="text-xs text-slate-400 font-bold">이수현황: ${completedCount} / ${required}</span>
+              </div>
+              <div class="flex flex-wrap gap-1.5 mt-2.5">
+                ${unitsStatusList.join('')}
+              </div>
+              ${flagNotes.length ? `<div class="mt-2 text-[11px] text-amber-700 font-bold leading-relaxed">⚠ 확인 필요 — ${flagNotes.map(escapeHtml).join(" / ")}</div>` : ""}
+            </div>
+            <div class="flex items-center space-x-3 justify-end">
+              <div class="w-24 bg-slate-100 h-2 rounded-full overflow-hidden">
+                <div class="bg-blue-500 h-full rounded-full" style="width: ${ratioPct}%"></div>
+              </div>
+              <span class="text-xs font-extrabold text-slate-800 min-w-[32px] text-right">${ratioPct}%</span>
+            </div>
+          `;
+          listContainer.appendChild(row);
+        });
+        const overallAvg = globalTotalReq > 0 ? Math.round((globalTotalComp / globalTotalReq) * 100) : 0;
+        const repAvg = document.getElementById("reportAverageRate");
+        if (repAvg) repAvg.innerText = `${overallAvg}%`;
+      }
+      // ==========================================
+      // STUDENT CLASSROOM HUB
+      // ==========================================
+      function initStudentSpace() {
+        const studentSec = document.getElementById("studentSection");
+        if (studentSec) studentSec.classList.remove("hidden");
+        const welcomeName = document.getElementById("studentWelcomeName");
+        if (welcomeName) welcomeName.innerText = loggedInUser.이름;
+        
+        const mapping = systemData.mapping.filter(m => String(m.학번).trim() === String(loggedInUser.아이디).trim());
+        const totalSubjCount = document.getElementById("studentTotalSubjectCount");
+        if (totalSubjCount) totalSubjCount.innerText = `${mapping.length}개 과목`;
+        const subjBadgeCount = document.getElementById("studentSubjectBadgeCount");
+        if (subjBadgeCount) subjBadgeCount.innerText = mapping.length;
+        const completedCount = systemData.progress.filter(p => 
+          String(p.학번).trim() === String(loggedInUser.아이디).trim() && p.상태 === "완료"
+        ).length;
+        const compUnitCount = document.getElementById("studentCompleteUnitCount");
+        if (compUnitCount) compUnitCount.innerText = `${completedCount}차시`;
+        const list = document.getElementById("studentSubjectList");
+        if (!list) return;
+        list.innerHTML = "";
+        if (mapping.length === 0) {
+          list.innerHTML = `<p class="text-xs text-slate-400 py-4 text-center">수강 배정된 과목이 없습니다. 관리자 설정을 대기해 주세요.</p>`;
+          return;
+        }
+        mapping.forEach(mapObj => {
+          const syllabus = systemData.subjects.filter(s => s.과목명 === mapObj.과목);
+          const totalUnits = syllabus.length;
+          
+          const completedUnits = countCompletedUnits(loggedInUser.아이디, mapObj.과목);
+          const pct = totalUnits > 0 ? Math.round((completedUnits / totalUnits) * 100) : 0;
+          const card = document.createElement("button");
+          card.onclick = () => selectStudentSubject(mapObj.과목, card);
+          card.className = "w-full p-3.5 bg-slate-50 hover:bg-white text-left rounded-xl border border-blue-100/50 transition-all flex justify-between items-center group";
+          card.innerHTML = `
+            <div>
+              <h4 class="text-xs font-bold text-blue-600 group-hover:text-blue-600 transition-colors">${escapeHtml(mapObj.과목)}</h4>
+              <p class="text-[10px] text-slate-400 mt-0.5">${totalUnits}개 중 ${completedUnits}개 시청 완료</p>
+            </div>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-all"></i>
+          `;
+          list.appendChild(card);
+        });
+        refreshIcons();
+      }
+      function selectStudentSubject(subjectName, cardElement) {
+        activeStudentSubject = subjectName;
+        const subList = document.getElementById("studentSubjectList");
+        if (subList) {
+          const cards = subList.children;
+          for (let c of cards) {
+            c.className = "w-full p-3.5 bg-slate-50 hover:bg-white text-left rounded-xl border border-blue-100/50 transition-all flex justify-between items-center group";
+          }
+        }
+        if (cardElement) {
+          cardElement.className = "w-full p-3.5 bg-white text-left rounded-xl border-2 border-blue-600 shadow-sm transition-all flex justify-between items-center group";
+        }
+        const list = document.getElementById("studentLectureList");
+        if (!list) return;
+        list.innerHTML = "";
+        const syllabus = systemData.subjects.filter(s => s.과목명 === subjectName);
+        
+        syllabus.forEach(lec => {
+          const isDone = systemData.progress.some(p => 
+            String(p.학번).trim() === String(loggedInUser.아이디).trim() &&
+            p.과목명 === lec.과목명 &&
+            Number(p.차시) === Number(lec.차시) &&
+            p.상태 === "완료"
+          );
+          const row = document.createElement("div");
+          row.className = `p-3.5 rounded-xl border flex items-center justify-between transition-all ${isDone ? 'bg-emerald-50/50 border-emerald-100' : 'bg-white border-blue-100 hover:border-blue-200'}`;
+          row.innerHTML = `
+            <div class="space-y-1">
+              <div class="flex items-center space-x-1.5">
+                <span class="text-xs font-black ${isDone ? 'text-emerald-700' : 'text-slate-800'}">${escapeHtml(lec.차시)}차시 학습</span>
+                ${isDone ? '<span class="text-[9px] font-extrabold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">완료</span>' : '<span class="text-[9px] font-bold bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded">미시청</span>'}
+              </div>
+              ${lec.학습내용 ? `<p class="text-xs font-bold text-slate-700 leading-snug break-keep">${escapeHtml(lec.학습내용)}</p>` : ""}
+              <p class="text-[10px] text-slate-400 truncate max-w-[180px]">과목명: ${escapeHtml(subjectName)}</p>
+            </div>
+            <button type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${isDone ? 'bg-slate-100 hover:bg-slate-200 text-slate-600' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'}" id="btn-lec-${escapeHtml(lec.차시)}">
+              ${isDone ? '다시 보기' : '학습 시작'}
+            </button>
+          `;
+          row.querySelector("button").addEventListener("click", () => loadProtectedLectureVideo(lec));
+          list.appendChild(row);
+        });
+      }
+      // ==========================================
+      // SMART SECURE YOUTUBE ENGINE
+      // ==========================================
+      function parseYoutubeVideoId(url) {
+        if (!url) return "";
+        url = String(url).trim();
+        
+        if (url.length === 11 && !url.includes("/") && !url.includes(".")) {
+          return url;
+        }
+        
+        const regExp = /^.*(youtu.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        
+        if (match && match[2] && match[2].length === 11) {
+          return match[2];
+        }
+        
+        return url;
+      }
+      function formatTime(seconds) {
+        if (isNaN(seconds) || seconds < 0) return "00:00";
+        const m = Math.floor(seconds / 60);
+        const s = Math.floor(seconds % 60);
+        return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      }
+      function notifyLectureStarted() {
+        if (lectureStartSent || !activeStudentLecture || completionState === "blocked") return;
+        lectureStartSent = true;
+        lastStartTry = Date.now();
+        const lecture = activeStudentLecture;
+        callServer("startLecture", [currentSessionToken, lecture.과목명, lecture.차시])
+          .then(res => {
+            if (lecture !== activeStudentLecture) return;
+            lectureStartOk = true;
+            if (res && res.replaced) showToast("다른 영상의 시청 기록은 멈추고, 이 영상의 시청을 시작해요. (한 번에 한 영상만 인정돼요)", "info");
+          })
+          .catch(err => {
+            if (lecture !== activeStudentLecture) return;
+            lectureStartSent = false;
+            if (err.sessionEnded) return;
+            if (err.code === "NO_DURATION") {
+              completionState = "blocked";
+              try { if (youtubePlayer && typeof youtubePlayer.pauseVideo === "function") youtubePlayer.pauseVideo(); } catch (e) {}
+              if (playerTrackerInterval) clearInterval(playerTrackerInterval);
+            }
+            showToast(err.message, "alert-triangle");
+          });
+      }
+      // 영상이 실제로 재생된 시간을 약 30초마다 서버에 알려요. (외부 앱 시청은 확인할 수 없어 보내지 않아요)
+      function sendWatchPing() {
+        if (!activeStudentLecture || !lectureStartOk || isExternalWatch) return Promise.resolve();
+        if (completionState === "sending" || completionState === "done" || completionState === "stale") return Promise.resolve();
+        const delta = Math.max(0, realTimeWatched - watchPingSent);
+        if (delta < 1) return Promise.resolve();
+        watchPingSent = realTimeWatched;
+        const lecture = activeStudentLecture;
+        return callServer("watchPing", [currentSessionToken, lecture.과목명, lecture.차시, Math.round(delta * 10) / 10], { retries: 1 })
+          .then(res => { if (res && res.stale && lecture === activeStudentLecture) handleStaleWatch(); })
+          .catch(err => { if (!err.sessionEnded && lecture === activeStudentLecture) watchPingSent -= delta; });
+      }
+      function handleStaleWatch() {
+        completionState = "stale";
+        if (playerTrackerInterval) clearInterval(playerTrackerInterval);
+        try { if (youtubePlayer && typeof youtubePlayer.pauseVideo === "function") youtubePlayer.pauseVideo(); } catch (e) {}
+        hideStillCheck();
+        showToast("다른 화면이나 기기에서 다른 영상을 재생해 이 영상의 시청 기록이 멈췄어요. 이 차시를 다시 열어 처음부터 시청해 주세요.", "shield-alert");
+      }
+      // 화면(탭)을 벗어나면 영상을 멈춰요. 돌아오면 재생 버튼으로 이어 봐요.
+      document.addEventListener("visibilitychange", () => {
+        if (!activeStudentLecture || isExternalWatch || !youtubePlayer || typeof youtubePlayer.getPlayerState !== "function") return;
+        if (document.hidden) {
+          try {
+            if (youtubePlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+              youtubePlayer.pauseVideo();
+              pausedByHidden = true;
+            }
+          } catch (e) {}
+          sendWatchPing();
+        } else if (pausedByHidden) {
+          pausedByHidden = false;
+          showToast("화면을 벗어나 영상이 멈췄어요. 재생 버튼을 눌러 이어서 보세요. (다른 화면에 있는 동안은 시청 시간에 들어가지 않아요)", "pause-circle");
+        }
+      });
+      // 30분 이상 영상: 30분 시점에 '계속 보고 있어요' 버튼을 한 번 띄워요. 30초 안에 누르지 않으면 멈춰요.
+      function askStillWatching() {
+        stillCheckState = "asking";
+        try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen(); } catch (e) {}
+        const box = document.getElementById("stillWatchingBox");
+        if (!box) return;
+        box.classList.remove("hidden");
+        let left = STILL_CHECK_WAIT;
+        const msg = document.getElementById("stillWatchingMsg");
+        const paint = () => { if (msg) msg.innerText = `잘 보고 있는지 확인할게요. ${left}초 안에 아래 버튼을 눌러 주세요.`; };
+        paint();
+        if (stillCheckTimer) clearInterval(stillCheckTimer);
+        stillCheckTimer = setInterval(() => {
+          left -= 1;
+          if (left > 0) { paint(); return; }
+          clearInterval(stillCheckTimer);
+          stillCheckTimer = null;
+          stillCheckState = "paused";
+          try { if (youtubePlayer && typeof youtubePlayer.pauseVideo === "function") youtubePlayer.pauseVideo(); } catch (e) {}
+          if (msg) msg.innerText = "확인이 없어 영상을 멈췄어요. 버튼을 누르면 이어서 볼 수 있어요. (멈춘 동안은 시청 시간에 들어가지 않아요)";
+        }, 1000);
+      }
+      function confirmStillWatching() {
+        const wasPaused = stillCheckState === "paused";
+        stillCheckState = "done";
+        hideStillCheck();
+        lastTickTime = Date.now();
+        if (wasPaused) { try { if (youtubePlayer) youtubePlayer.playVideo(); } catch (e) {} }
+      }
+      function hideStillCheck() {
+        if (stillCheckTimer) { clearInterval(stillCheckTimer); stillCheckTimer = null; }
+        const box = document.getElementById("stillWatchingBox");
+        if (box) box.classList.add("hidden");
+      }
+      function loadProtectedLectureVideo(lecture) {
+        activeStudentLecture = lecture;
+        
+        const playingSubj = document.getElementById("playingSubjectName");
+        if (playingSubj) playingSubj.innerText = `${lecture.과목명} | ${lecture.차시}차시`;
+        const playingLecTitle = document.getElementById("playingLectureTitle");
+        if (playingLecTitle) playingLecTitle.innerText = lecture.학습내용 ? `${lecture.차시}차시 · ${lecture.학습내용}` : `${lecture.과목명} ${lecture.차시}차시 스마트 온라인 강의`;
+        const videoId = parseYoutubeVideoId(lecture.onlineLink || lecture.온라인영상링크);
+        
+        if (!/^[A-Za-z0-9_-]{11}$/.test(videoId)) {
+          showToast("유튜브 링크가 비어있거나 올바르지 않은 경로입니다.");
+          return;
+        }
+        const placeholder = document.getElementById("playerPlaceholder");
+        if (placeholder) placeholder.classList.add("hidden");
+        const frameWrapper = document.getElementById("videoFrameWrapper");
+        if (frameWrapper) frameWrapper.classList.remove("hidden");
+        
+        const progressPanel = document.getElementById("securePlayProgressPanel");
+        if (progressPanel) {
+          progressPanel.classList.remove("hidden");
+          const alertTxt = document.getElementById("speedAlertText");
+          if (alertTxt) {
+            alertTxt.innerText = "수강 대기 중";
+            alertTxt.className = "text-xs font-bold text-slate-400";
+          }
+          const realWatchTxt = document.getElementById("realWatchedTimeText");
+          if (realWatchTxt) realWatchTxt.innerText = "00:00";
+          const totDurTxt = document.getElementById("totalDurationText");
+          if (totDurTxt) totDurTxt.innerText = "00:00";
+          const realWatchRatioTxt = document.getElementById("realWatchedRatioText");
+          if (realWatchRatioTxt) realWatchRatioTxt.innerText = "0%";
+        }
+        const bypassPanel = document.getElementById("embedFailSafePanel");
+        if (bypassPanel) bypassPanel.classList.add("hidden");
+        lastSafeTime = 0;
+        realTimeWatched = 0;
+        lastTickTime = Date.now();
+        originalVideoDuration = 0;
+        isAdScreenCurrently = false;
+        completionState = "idle";
+        lectureStartSent = false;
+        lectureStartOk = false;
+        lastStartTry = 0;
+        watchPingSent = 0;
+        pausedByHidden = false;
+        if (stillCheckState !== "none") hideStillCheck();
+        stillCheckState = "none";
+        isExternalWatch = false;
+        embedRetryUsed = false;
+        const retryBtn = document.getElementById("retryCompleteBtn");
+        if (retryBtn) retryBtn.classList.add("hidden");
+        rebuildPlayerAndFrame(videoId);
+        if (failSafeLoadTimer) clearTimeout(failSafeLoadTimer);
+        failSafeLoadTimer = setTimeout(() => {
+          if (realTimeWatched === 0 && (!youtubePlayer || typeof youtubePlayer.getPlayerState !== "function" || youtubePlayer.getPlayerState() !== YT.PlayerState.PLAYING)) {
+            console.warn("[Secure Monitor] Embed playback has failed to start. Activating copyright fail-safe system...");
+            if (bypassPanel) bypassPanel.classList.remove("hidden");
+            refreshIcons();
+          }
+        }, 10000); // 느린 네트워크를 재생 차단으로 오인하지 않도록 충분히 기다립니다.
+      }
+      function rebuildPlayerAndFrame(videoId) {
+        const parentContainer = document.getElementById("ytPlayerResponsiveTarget");
+        if (!parentContainer) return;
+        parentContainer.innerHTML = "";
+        
+        const newPlayerDiv = document.createElement("div");
+        newPlayerDiv.id = "ytIframePlayer";
+        newPlayerDiv.className = "absolute inset-0 w-full h-full";
+        parentContainer.appendChild(newPlayerDiv);
+        if (youtubePlayer) {
+          try {
+            youtubePlayer.destroy();
+          } catch(e) {}
+          youtubePlayer = null;
+        }
+        
+        clearInterval(playerTrackerInterval);
+        const hostOrigin = window.location.origin && window.location.origin !== "null" ? window.location.origin : "";
+        const buildAction = () => {
+          try {
+            const playerVars = {
+              'autoplay': 1,              
+              'mute': 1,                  
+              'controls': 1,
+              'disablekb': 1,
+              'modestbranding': 1,
+              'rel': 0,
+              'showinfo': 0,
+              'iv_load_policy': 3,
+              'playsinline': 1,           
+              'enablejsapi': 1
+            };
+            if (hostOrigin && hostOrigin !== "file://") {
+              playerVars.origin = hostOrigin;
+              playerVars.widget_referrer = hostOrigin;
+            }
+            youtubePlayer = new YT.Player('ytIframePlayer', {
+              height: '100%',
+              width: '100%',
+              videoId: videoId,
+              playerVars: playerVars,
+              events: {
+                'onReady': onSecurePlayerReady,
+                'onStateChange': onSecurePlayerStateChange,
+                'onPlaybackRateChange': onSecurePlaybackRateChange,
+                'onError': onSecurePlayerError 
+              }
+            });
+          } catch(err) {
+            console.error("Player build crashed, retrying securely: ", err);
+          }
+        };
+        // YouTube API 로딩이 늦어도 최대 10초까지 기다립니다.
+        let waited = 0;
+        const waitForApi = () => {
+          if (window.YT && window.YT.Player) {
+            isYTApiLoaded = true;
+            buildAction();
+          } else if (waited < 10000) {
+            waited += 300;
+            setTimeout(waitForApi, 300);
+          }
+        };
+        waitForApi();
+      }
+      function onSecurePlayerError(event) {
+        console.warn("[Secure Monitor] YouTube Video Error Detected. Code: " + event.data);
+        // 임베드 금지(101, 150)·설정 오류(153)·없는 영상(100)이 아니면 일시적 오류로 보고 한 번 더 재생합니다.
+        const isPermanent = [100, 101, 150, 153].includes(Number(event.data));
+        if (!isPermanent && !embedRetryUsed && activeStudentLecture) {
+          embedRetryUsed = true;
+          showToast("재생 오류가 발생해 다시 시도합니다.", "refresh-cw");
+          rebuildPlayerAndFrame(parseYoutubeVideoId(activeStudentLecture.onlineLink || activeStudentLecture.온라인영상링크));
+          return;
+        }
+        triggerExternalFallbackUI();
+      }
+      function triggerExternalFallbackUI() {
+        if (failSafeLoadTimer) clearTimeout(failSafeLoadTimer);
+        if (!activeStudentLecture) return;
+        const videoId = parseYoutubeVideoId(activeStudentLecture.onlineLink || activeStudentLecture.온라인영상링크);
+        const parentContainer = document.getElementById("ytPlayerResponsiveTarget");
+        if (!parentContainer) return;
+        clearInterval(playerTrackerInterval);
+        if (originalVideoDuration === 0) {
+          originalVideoDuration = Number(activeStudentLecture.영상길이초) || 0;
+        }
+        const hasKnownDuration = originalVideoDuration > 0;
+        const bypassPanel = document.getElementById("embedFailSafePanel");
+        if (bypassPanel) bypassPanel.classList.add("hidden");
+        parentContainer.innerHTML = `
+          <div class="absolute inset-0 bg-slate-900 flex flex-col justify-center items-center p-6 text-center text-white z-20">
+            <div class="w-12 h-12 bg-amber-500/15 text-amber-400 rounded-full flex items-center justify-center mb-3 animate-pulse">
+              <i data-lucide="external-link" class="w-6 h-6"></i>
+            </div>
+            <h5 class="text-xs font-extrabold text-amber-400 mb-1">외부 재생 및 보안 동기화 수강모드</h5>
+            <p class="text-[10px] text-slate-400 max-w-xs leading-normal mb-4">
+              저작권 규정 영상은 공식 유튜브 앱/웹에서 직접 시청해야 시청 완료로 기록됩니다. 아래 우회 시청을 시작하세요. 외부 시청 여부는 시청 기록에 함께 남습니다.
+            </p>
+            <div class="flex flex-col gap-2 w-full max-w-xs">
+              ${hasKnownDuration ? `
+              <a href="https://youtu.be/${videoId}" target="_blank" rel="noopener" onclick="startExternalStudyTimer()" class="w-full bg-blue-500 hover:bg-blue-600 active:scale-95 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow-md transition-all">
+                <span>공식 유튜브 앱에서 시청 시작</span>
+                <i data-lucide="play-circle" class="w-4 h-4"></i>
+              </a>
+              <p class="text-[9px] text-slate-500 leading-normal">* 앱/웹 시청 시작 시 백그라운드로 시청 시간 확인 타이머가 작동합니다.</p>
+              ` : `
+              <p class="text-[11px] font-bold text-amber-300 leading-normal">이 차시는 재생 시간이 등록되어 있지 않아 외부 시청으로 완료할 수 없습니다. 선생님께 알려 주세요.</p>
+              `}
+            </div>
+          </div>
+        `;
+        refreshIcons();
+        const progressPanel = document.getElementById("securePlayProgressPanel");
+        if (progressPanel) {
+          progressPanel.classList.remove("hidden");
+          const speedAlert = document.getElementById("speedAlertText");
+          if (speedAlert) {
+            speedAlert.innerText = "외부 앱 정속 시청 추적 중";
+            speedAlert.className = "text-xs font-bold text-amber-500 animate-pulse";
+          }
+        }
+      }
+      function startExternalStudyTimer() {
+        const targetDuration = originalVideoDuration;
+        if (!(targetDuration > 0)) return;
+        isExternalWatch = true;
+        lastTickTime = Date.now();
+        notifyLectureStarted();
+        showToast("유튜브 앱에서 안전 시청 중! 브라우저 창을 그대로 켜두세요.", "info");
+        if (playerTrackerInterval) clearInterval(playerTrackerInterval);
+        
+        playerTrackerInterval = setInterval(() => {
+          const now = Date.now();
+          const delta = (now - lastTickTime) / 1000;
+          lastTickTime = now;
+          realTimeWatched += delta;
+          const realRatio = Math.min(100, Math.round((realTimeWatched / targetDuration) * 100));
+          const totDurText = document.getElementById("totalDurationText");
+          if (totDurText) totDurText.innerText = formatTime(targetDuration);
+          const realWatchTxt = document.getElementById("realWatchedTimeText");
+          if (realWatchTxt) realWatchTxt.innerText = formatTime(realTimeWatched);
+          const realWatchRatioTxt = document.getElementById("realWatchedRatioText");
+          if (realWatchRatioTxt) realWatchRatioTxt.innerText = `${realRatio}%`;
+          if (realTimeWatched >= targetDuration * 0.95) {
+            clearInterval(playerTrackerInterval);
+            triggerCompletionSuccess();
+          }
+        }, 1000);
+      }
+      function onSecurePlayerReady(event) {
+        if (failSafeLoadTimer) clearTimeout(failSafeLoadTimer);
+        lastSafeTime = 0;
+        realTimeWatched = 0;
+        lastTickTime = Date.now();
+        originalVideoDuration = 0;
+        isAdScreenCurrently = false;
+        
+        showToast("재생을 시작합니다. 소리가 들리지 않으면 음소거를 해제해 주세요.", "volume-2");
+        
+        try {
+          event.target.playVideo();
+        } catch(e) {}
+        if (playerTrackerInterval) {
+          clearInterval(playerTrackerInterval);
+        }
+        playerTrackerInterval = setInterval(trackStudentProgressBehavior, 300);
+      }
+      function onSecurePlayerStateChange(event) {
+        if (event.data === YT.PlayerState.PLAYING) {
+          lastTickTime = Date.now();
+          notifyLectureStarted();
+          const currentTime = youtubePlayer.getCurrentTime();
+          if (typeof currentTime === 'number' && currentTime < lastSafeTime + 2) {
+            lastSafeTime = currentTime;
+          }
+        }
+        if (event.data === YT.PlayerState.ENDED) {
+          checkAndTriggerCompletion();
+        }
+      }
+      function onSecurePlaybackRateChange(event) {
+        const rate = event.data;
+        if (rate > 1.0) {
+          youtubePlayer.setPlaybackRate(1.0);
+          youtubePlayer.pauseVideo();
+          showToast("배속 학습은 허용되지 않습니다! 정속(1.0x)으로 재생을 변경합니다.", "shield-alert");
+          setTimeout(() => {
+            if (youtubePlayer) youtubePlayer.playVideo();
+          }, 1000);
+        }
+      }
+      function trackStudentProgressBehavior() {
+        if (!youtubePlayer || typeof youtubePlayer.getCurrentTime !== "function") return;
+        if (document.hidden || stillCheckState === "paused") {
+          // 화면을 벗어났거나 30분 확인을 기다리는 동안에는 시청 시간에 넣지 않아요.
+          try {
+            if (youtubePlayer.getPlayerState() === YT.PlayerState.PLAYING) youtubePlayer.pauseVideo();
+            const t = youtubePlayer.getCurrentTime();
+            if (typeof t === "number" && t < lastSafeTime + 2.5) lastSafeTime = t;
+          } catch (e) {}
+          lastTickTime = Date.now();
+          return;
+        }
+        try {
+          const current = youtubePlayer.getCurrentTime();
+          const duration = youtubePlayer.getDuration();
+          const playerState = youtubePlayer.getPlayerState();
+          const playbackRate = youtubePlayer.getPlaybackRate();
+          if (typeof current !== 'number' || typeof duration !== 'number' || isNaN(current) || duration <= 0) {
+            lastTickTime = Date.now();
+            return;
+          }
+          const now = Date.now();
+          const delta = (now - lastTickTime) / 1000;
+          lastTickTime = now;
+          if (originalVideoDuration === 0 && duration > 5) {
+            originalVideoDuration = duration;
+          }
+          if (originalVideoDuration > 0 && Math.abs(duration - originalVideoDuration) > 1.5) {
+            isAdScreenCurrently = true;
+          } else {
+            isAdScreenCurrently = false;
+            if (originalVideoDuration > 0 && Math.abs(duration - originalVideoDuration) <= 1.5) {
+              originalVideoDuration = duration; 
+            }
+          }
+          const progressDot = document.getElementById("progressIndicatorDot");
+          const progressTitle = document.getElementById("progressAnalysisTitle");
+          const speedAlert = document.getElementById("speedAlertText");
+          if (isAdScreenCurrently) {
+            if (progressDot) progressDot.className = "inline-block w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping";
+            if (progressTitle) progressTitle.innerHTML = `<span class="text-amber-600 font-extrabold flex items-center"><i data-lucide="info" class="w-3.5 h-3.5 mr-1"></i>광고 상영 중 (진도 인정 대기)</span>`;
+            if (speedAlert) {
+              speedAlert.innerText = "광고 시청 중 (시간 누적 제외)";
+              speedAlert.className = "text-xs font-bold text-amber-500";
+            }
+            refreshIcons();
+            
+            lastTickTime = Date.now();
+            return; 
+          } else {
+            if (progressDot) progressDot.className = "inline-block w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse";
+            if (progressTitle) progressTitle.innerText = "실시간 수강 시간 분석";
+          }
+          if (playerState === YT.PlayerState.PLAYING) {
+            const advance = current - lastSafeTime;
+            // 백그라운드 탭에서는 타이머가 늦게 돌므로 지난 시간만큼 허용폭을 넓힙니다.
+            const allowedJump = Math.max(2.5, delta * Math.max(playbackRate, 1) + 1.5);
+            if (advance > allowedJump) {
+              youtubePlayer.seekTo(lastSafeTime, true);
+              showToast("앞으로 건너뛰기할 수 없습니다. 영상을 처음부터 정속 학습해주세요.", "shield-alert");
+            } else {
+              if (playbackRate <= 1.0) {
+                // 영상이 실제로 진행된 만큼만 인정합니다. (절전·멈춤 시간 제외)
+                realTimeWatched += Math.min(delta, Math.max(0, advance) + 0.5);
+              }
+              lastSafeTime = current;
+              if (!lectureStartSent && completionState !== "blocked" && Date.now() - lastStartTry > 15000) notifyLectureStarted();
+              if (realTimeWatched - watchPingSent >= 30) sendWatchPing();
+              if (stillCheckState === "none" && originalVideoDuration >= STILL_CHECK_AT && realTimeWatched >= STILL_CHECK_AT) askStillWatching();
+            }
+          } else {
+            if (current < lastSafeTime + 2.5) {
+              lastSafeTime = current;
+            }
+          }
+          const targetDurationForRatio = originalVideoDuration > 0 ? originalVideoDuration : duration;
+          const realRatio = Math.min(100, Math.round((realTimeWatched / targetDurationForRatio) * 100));
+          const totDurText = document.getElementById("totalDurationText");
+          if (totDurText) totDurText.innerText = formatTime(targetDurationForRatio);
+          const realWatchTxt = document.getElementById("realWatchedTimeText");
+          if (realWatchTxt) realWatchTxt.innerText = formatTime(realTimeWatched);
+          const realWatchRatioTxt = document.getElementById("realWatchedRatioText");
+          if (realWatchRatioTxt) realWatchRatioTxt.innerText = `${realRatio}%`;
+          if (speedAlert && !isAdScreenCurrently) {
+            if (playbackRate > 1.0) {
+              speedAlert.innerText = `⚠ 배속 감지 (${playbackRate}x) 시간정지`;
+              speedAlert.className = "text-xs font-bold text-rose-600 animate-pulse";
+            } else if (playerState === YT.PlayerState.PLAYING) {
+              speedAlert.innerText = "정속 준수 중 (1.0x)";
+              speedAlert.className = "text-xs font-bold text-emerald-600";
+            } else {
+              speedAlert.innerText = "일시 정지됨";
+              speedAlert.className = "text-xs font-bold text-slate-400";
+            }
+          }
+          if ((duration - current <= 3 || current / duration >= 0.99) && !isAdScreenCurrently) {
+            checkAndTriggerCompletion();
+          }
+        } catch (e) {
+          console.error("Progress Tracking Error: ", e);
+        }
+      }
+      function sendRemoteSessionHeartbeat() {
+        lastHeartbeatTime = Date.now();
+        if (!loggedInUser || loggedInUser.구분 !== "학생") return;
+        // 중복 로그인이면 callServer가 안내창을 띄웁니다. 일시적인 통신 오류는 다음 확인 때 다시 봅니다.
+        callServer("heartbeat", [currentSessionToken], { retries: 0 }).catch(() => {});
+      }
+      function handleSessionEnded(msg, code) {
+        destroyPlayer();
+        if (globalHeartbeatInterval) {
+          clearInterval(globalHeartbeatInterval);
+          globalHeartbeatInterval = null;
+        }
+        const blockTitle = document.getElementById("sessionBlockTitle");
+        if (blockTitle) blockTitle.innerText = code === "EXPIRED" ? "로그인 시간 만료" : "중복 로그인 감지";
+        const blockMsg = document.getElementById("sessionBlockMessage");
+        if (blockMsg) blockMsg.innerText = msg;
+        const blockModal = document.getElementById("sessionBlockModal");
+        if (blockModal) blockModal.classList.remove("hidden");
+        
+        refreshIcons();
+      }
+      function closeSessionBlockModalAndLogout() {
+        const blockModal = document.getElementById("sessionBlockModal");
+        if (blockModal) blockModal.classList.add("hidden");
+        logout();
+      }
+      function checkAndTriggerCompletion() {
+        if (!youtubePlayer || typeof youtubePlayer.getDuration !== "function" || isAdScreenCurrently) return;
+        
+        const duration = originalVideoDuration > 0 ? originalVideoDuration : youtubePlayer.getDuration();
+        const current = youtubePlayer.getCurrentTime();
+        
+        if (duration <= 0) return;
+        const isTimeRequirementMet = (realTimeWatched >= duration * 0.95);
+        const isNearEnd = (duration - current <= 5 || current / duration >= 0.98);
+        if (isNearEnd) {
+          if (isTimeRequirementMet) {
+            triggerCompletionSuccess();
+          } else if (realTimeWatched + (duration - current) >= duration * 0.95) {
+            // 남은 구간까지 들으면 기준을 채울 수 있으니 그대로 재생합니다. (짧은 영상 보호)
+            return;
+          } else {
+            youtubePlayer.pauseVideo();
+            const penaltyPoint = Math.max(0, Math.min(realTimeWatched, duration - 10));
+            youtubePlayer.seekTo(penaltyPoint, true);
+            lastSafeTime = penaltyPoint;
+            
+            showToast("정속 학습 인정 시간이 부족합니다. (광고 상영 시간 등 제외) 해당 위치부터 다시 이어 들어야 합니다.", "shield-alert");
+          }
+        }
+      }
+      function triggerCompletionSuccess() {
+        if (completionState === "sending" || completionState === "done" || completionState === "blocked" || completionState === "stale") return;
+        if (!activeStudentLecture) return;
+        hideStillCheck();
+        const tail = isExternalWatch ? 0 : Math.max(0, realTimeWatched - watchPingSent);
+        watchPingSent = realTimeWatched;
+        if (playerTrackerInterval) {
+          clearInterval(playerTrackerInterval);
+        }
+        completionState = "sending";
+        const retryBtn = document.getElementById("retryCompleteBtn");
+        if (retryBtn) retryBtn.classList.add("hidden");
+        showToast("수강을 끝까지 완료하셨습니다! 시청 완료를 기록하고 있습니다...", "award");
+        callServer("completeLecture", [
+          currentSessionToken,
+          activeStudentLecture.과목명,
+          activeStudentLecture.차시,
+          Math.round(originalVideoDuration || 0),
+          isExternalWatch,
+          Math.round(tail * 10) / 10
+        ])
+        .then(res => {
+          completionState = "done";
+          showToast(res.already ? "이미 시청을 완료한 영상입니다." : "수강 완료가 기록되었습니다!", "check-circle");
+          syncSheetsDataDirectly(true);
+        })
+        .catch(err => {
+          completionState = "failed";
+          watchPingSent = Math.max(0, watchPingSent - tail); // 다시 보낼 때 마지막 시청 시간도 함께 보내요
+          if (err.sessionEnded) return;
+          showToast(err.message, "alert-triangle");
+          if (retryBtn) retryBtn.classList.remove("hidden");
+        });
+      }
+      function refreshCurrentViews() {
+        if (!loggedInUser) return;
+        if (loggedInUser.구분 === "학생") {
+          initStudentSpace();
+          if (activeStudentSubject) {
+            const subList = document.getElementById("studentSubjectList");
+            if (subList) {
+              for (let card of subList.children) {
+                const title = card.querySelector("h4");
+                if (title && title.innerText === activeStudentSubject) {
+                  selectStudentSubject(activeStudentSubject, card);
+                  break;
+                }
+              }
+            }
+          }
+          return;
+        }
+        calculateOverviewStats();
+        renderSubjectSelectorButtons();
+        if (selectedClassId) selectClass(selectedClassId);
+        liveSearchStudent();
+      }
+      function syncSheetsDataDirectly(isQuiet) {
+        if (!currentSessionToken) return;
+        if (!isQuiet) showToast("최신기록을 동기화하고 있습니다...", "info");
+        callServer("loadData", [currentSessionToken])
+          .then(res => {
+            systemData = res.data;
+            refreshCurrentViews();
+            if (!isQuiet) showToast("진도 동기화가 성공적으로 완료되었습니다!", "check-circle");
+          })
+          .catch(err => {
+            if (!err.sessionEnded) showToast(err.message, "alert-triangle");
+          });
+      }
+      function destroyPlayer() {
+        if (failSafeLoadTimer) clearTimeout(failSafeLoadTimer);
+        if (activeStudentLecture && lectureStartOk && !isExternalWatch && completionState !== "done") sendWatchPing();
+        hideStillCheck();
+        stillCheckState = "none";
+        if (youtubePlayer) {
+          try {
+            youtubePlayer.destroy();
+          } catch(e) {}
+          youtubePlayer = null;
+        }
+        clearInterval(playerTrackerInterval);
+        const frameWrapper = document.getElementById("videoFrameWrapper");
+        if (frameWrapper) {
+          frameWrapper.classList.add("hidden");
+        }
+        const placeholder = document.getElementById("playerPlaceholder");
+        if (placeholder) placeholder.classList.remove("hidden");
+        const progressPanel = document.getElementById("securePlayProgressPanel");
+        if (progressPanel) progressPanel.classList.add("hidden");
+        const bypassPanel = document.getElementById("embedFailSafePanel");
+        if (bypassPanel) bypassPanel.classList.add("hidden");
+        
+        activeStudentLecture = null;
+        originalVideoDuration = 0;
+        isAdScreenCurrently = false;
+      }
+      function exportToPDF(mode) {
+        if (!selectedSubjectName) {
+          showToast(mode === "print" ? "인쇄할 과목을 먼저 선택해 주셔야 합니다." : "PDF를 생성할 과목을 먼저 선택해 주셔야 합니다.");
+          return;
+        }
+        const reportTitle = document.getElementById("pdfReportTitle");
+        if (reportTitle) reportTitle.innerText = `${selectedSubjectName} 최성보 온라인 추가학습 이수현황`;
+        
+        const now = new Date();
+        const formattedDate = `${now.getFullYear()}년 ${String(now.getMonth() + 1).padStart(2, '0')}월 ${String(now.getDate()).padStart(2, '0')}일`;
+        const subHeader = document.getElementById("pdfReportSubHeader");
+        if (subHeader) subHeader.innerText = `2026학년도 단원고등학교 2학년`;
+        const dateStamp = document.getElementById("pdfReportDateStamp");
+        if (dateStamp) dateStamp.innerText = formattedDate;
+        
+        const curriculum = systemData.subjects.filter(s => s.과목명 === selectedSubjectName);
+        const totalLectures = curriculum.length;
+        const mappedStudentIds = systemData.mapping
+          .filter(m => m.과목 === selectedSubjectName)
+          .map(m => String(m.학번).trim());
+        const matchedStudents = systemData.users.filter(u => 
+          u.구분 === "학생" && mappedStudentIds.includes(String(u.아이디).trim())
+        );
+        matchedStudents.sort((a, b) => String(a.아이디).slice(0, 5).localeCompare(String(b.아이디).slice(0, 5)));
+        const pdfTbody = document.getElementById("pdfTableBody");
+        if (!pdfTbody) return;
+        pdfTbody.innerHTML = "";
+        matchedStudents.forEach((student, index) => {
+          const completedCount = countCompletedUnits(student.아이디, selectedSubjectName);
+          const ratio = totalLectures > 0 ? (completedCount / totalLectures) : 0;
+          const pct = Math.round(ratio * 100);
+          const tr = document.createElement("tr");
+          tr.className = "border-b border-slate-300 text-slate-800";
+          tr.innerHTML = `
+            <td class="py-2.5 px-3 border border-slate-300 text-center text-xs font-semibold">${index + 1}</td>
+            <td class="py-2.5 px-3 border border-slate-300 text-center font-bold text-slate-900">${escapeHtml(student.아이디)}</td>
+            <td class="py-2.5 px-3 border border-slate-300 text-center font-semibold text-slate-800">${escapeHtml(student.이름)}</td>
+            <td class="py-2.5 px-3 border border-slate-300 text-center">${escapeHtml(selectedSubjectName)}</td>
+            <td class="py-2.5 px-3 border border-slate-300 text-center font-bold text-slate-700">${completedCount} / ${totalLectures}</td>
+            <td class="py-2.5 px-3 border border-slate-300 text-center font-black text-blue-700">${pct}%</td>
+          `;
+          pdfTbody.appendChild(tr);
+        });
+        const target = document.getElementById("pdfExportModal");
+        if (!target) return;
+        if (mode === "print") {
+          // 인쇄: 확인서 부분만 종이에 나오도록 잠시 표시한 뒤 인쇄 창을 엽니다.
+          document.body.classList.add("printing-report");
+          target.classList.remove("hidden");
+          const done = () => {
+            document.body.classList.remove("printing-report");
+            target.classList.add("hidden");
+            window.removeEventListener("afterprint", done);
+          };
+          window.addEventListener("afterprint", done);
+          setTimeout(() => {
+            window.print();
+            setTimeout(() => { if (document.body.classList.contains("printing-report")) done(); }, 1000);
+          }, 300);
+          return;
+        }
+        target.classList.remove("hidden");
+        target.style.opacity = "1";
+        target.style.position = "relative";
+        const opt = {
+          margin:       [15, 3, 15, 5], 
+          filename:     `${selectedSubjectName}_최성보_온라인_추가학습_이수현황.pdf`,
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { 
+            scale: 2, 
+            useCORS: true, 
+            letterRendering: true, 
+            logging: false,
+            scrollY: 0,
+            scrollX: 0
+          },
+          jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        showToast("PDF 보고서를 분석하여 이미지 렌더링 중입니다...", "info");
+        setTimeout(() => {
+          html2pdf().set(opt).from(target).save().then(() => {
+            target.classList.add("hidden");
+            target.style.opacity = "0.99";
+            target.style.position = "fixed";
+            showToast("이수현황 PDF가 정상 다운로드되었습니다!", "check-circle");
+          }).catch(err => {
+            console.error("PDF 생성 에러: ", err);
+            target.classList.add("hidden");
+            target.style.opacity = "0.99";
+            target.style.position = "fixed";
+            showToast("PDF 생성 중 에러가 발생했습니다.", "alert-triangle");
+          });
+        }, 1200);
+      }
+      // 아이콘 라이브러리를 불러오지 못해도 프로그램은 계속 동작합니다.
+      function refreshIcons() {
+        try {
+          if (window.lucide && typeof window.lucide.createIcons === "function") window.lucide.createIcons();
+        } catch (e) {}
+      }
+      // 시작 중 문제가 생기면 무엇이 문제인지 화면에 보여 줍니다.
+      function showStartupProblem(message) {
+        const loader = document.getElementById("initialDataLoader");
+        if (!loader || loader.classList.contains("hidden")) return;
+        loader.innerHTML = `
+          <div class="max-w-md w-full bg-white border border-rose-100 rounded-2xl p-6 text-center space-y-3 shadow-sm">
+            <h3 class="text-base font-bold text-rose-600">프로그램을 시작하지 못했습니다</h3>
+            <p class="text-xs text-slate-500 leading-relaxed">${escapeHtml(message)}</p>
+            <button onclick="location.reload()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs py-2 px-4 rounded-xl">다시 시도</button>
+          </div>
+        `;
+      }
+      window.addEventListener("error", function(event) {
+        showStartupProblem("오류 내용: " + (event.message || "알 수 없는 오류"));
+      });
+      setTimeout(function() {
+        showStartupProblem("15초 동안 서버 응답이 없습니다. 인터넷 연결이나 배포 주소를 확인한 뒤 다시 시도해 주세요.");
+      }, 15000);
+      // ?check=영상ID 로 열면 로그인 없이 그 영상이 이 사이트에서 재생되는지만 확인해 부모 창(보장지도)에 알려 줍니다.
+      function runPlayCheck(videoId) {
+        document.body.className = "";
+        document.body.style.cssText = "margin:0;background:#000;padding:0";
+        document.body.innerHTML = '<div style="position:fixed;inset:0"><div id="chkFrame" style="width:100%;height:100%"></div></div>';
+        let sent = false;
+        const send = (r) => {
+          if (sent) return;
+          sent = true;
+          try { window.parent.postMessage(Object.assign({ type: "dw-yt-check", id: videoId }, r), "*"); } catch (e) {}
+        };
+        setTimeout(() => send({ ok: false, code: "timeout" }), 18000);
+        const build = () => {
+          new YT.Player("chkFrame", {
+            width: "100%", height: "100%", videoId: videoId,
+            playerVars: { autoplay: 1, mute: 1, playsinline: 1, rel: 0, origin: location.origin },
+            events: {
+              onReady: (e) => { try { e.target.mute(); e.target.playVideo(); } catch (x) {} },
+              onStateChange: (e) => {
+                if (e.data !== YT.PlayerState.PLAYING) return;
+                let seconds = 0;
+                try { seconds = Math.round(e.target.getDuration()) || 0; e.target.pauseVideo(); } catch (x) {}
+                send({ ok: true, seconds: seconds });
+              },
+              onError: (e) => send({ ok: false, code: e.data })
+            }
+          });
+        };
+        if (window.YT && window.YT.Player) { build(); return; }
+        const tag = document.createElement("script");
+        tag.src = "https://www.youtube.com/iframe_api";
+        tag.onerror = () => send({ ok: false, code: "api" });
+        document.head.appendChild(tag);
+        const wait = setInterval(() => {
+          if (window.YT && window.YT.Player) { clearInterval(wait); build(); }
+        }, 200);
+      }
+      function startApp() {
+        let checkId = "";
+        try { checkId = new URLSearchParams(location.search).get("check") || ""; } catch (e) {}
+        if (/^[A-Za-z0-9_-]{11}$/.test(checkId)) {
+          runPlayCheck(checkId);
+          return;
+        }
+        if (!isInsideAppsScript() && !/^https:\/\/script\.google\.com\/.+\/exec$/.test(API_URL)) {
+          showStartupProblem("서버 주소가 설정되지 않았습니다. index.html 위쪽의 API_URL에 Apps Script 웹앱 주소(/exec로 끝나는 주소)를 넣어 주세요.");
+          return;
+        }
+        try {
+          initApp();
+        } catch (e) {
+          showStartupProblem("오류 내용: " + e.message);
+        }
+      }
+      // 글꼴·PDF 도구 등 외부 파일을 기다리지 않고 바로 시작합니다.
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startApp);
+      else startApp();
+    </script>
+      <div id="stillWatchingBox" style="position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:90;width:min(92vw,380px)" class="hidden bg-white border-2 border-amber-400 rounded-2xl shadow-2xl p-4 text-center">
+      <p class="text-sm font-extrabold text-slate-900">계속 보고 있나요?</p>
+      <p id="stillWatchingMsg" class="text-xs text-slate-500 mt-1 leading-relaxed"></p>
+      <button type="button" onclick="confirmStillWatching()" class="mt-3 w-full bg-amber-500 hover:bg-amber-600 text-white font-extrabold py-2.5 rounded-xl text-sm transition-all">계속 보고 있어요</button>
+    </div>
+</body>
+</html>
